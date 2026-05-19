@@ -5713,6 +5713,56 @@
             if (emptyState) emptyState.style.display = visibleCount === 0 ? 'flex' : 'none';
         }
 
+        function buildWikiCardFigure(card, meta) {
+            if (!meta?.src || card.querySelector('.wiki-card-figure')) return null;
+
+            const figure = document.createElement('figure');
+            figure.className = 'wiki-card-figure';
+
+            const img = document.createElement('img');
+            img.loading = 'lazy';
+            img.decoding = 'async';
+            img.alt = meta.title || card.querySelector('.card-title')?.textContent || 'Immagine Wikipedia';
+            img.src = meta.src;
+
+            const caption = document.createElement('figcaption');
+            caption.className = 'wiki-card-caption';
+            const sourceLabel = meta.sourceTitle || meta.query || 'Wikipedia / Wikimedia Commons';
+            caption.innerHTML = `
+                <span>${sourceLabel}</span>
+                ${meta.sourcePage ? `<a href="${meta.sourcePage}" target="_blank" rel="noopener noreferrer">Fonte</a>` : ''}
+            `;
+
+            img.addEventListener('click', () => {
+                const title = card.querySelector('.card-title')?.textContent?.trim() || 'Immagine Wikipedia';
+                openConceptLightbox(img.src, title, `Fonte: ${sourceLabel}`);
+            });
+
+            figure.appendChild(img);
+            figure.appendChild(caption);
+            return figure;
+        }
+
+        function hydrateWikiCardImages() {
+            const imageMap = window.WIKI_CARD_IMAGES || {};
+            const cards = Array.from(document.querySelectorAll('.card[data-id]'));
+
+            cards.forEach(card => {
+                const meta = imageMap[card.getAttribute('data-id')];
+                if (!meta) return;
+                const figure = buildWikiCardFigure(card, meta);
+                if (!figure) return;
+                const body = card.querySelector('.card-body');
+                card.insertBefore(figure, body);
+            });
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', hydrateWikiCardImages);
+        } else {
+            hydrateWikiCardImages();
+        }
+
     
     // --- INIZIO INTEGRAZIONE WIKIPEDIA LIVE ---
     async function loadWikipediaImages() {
