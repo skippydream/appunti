@@ -10,7 +10,6 @@
     // ============================================================
     
     const state = {
-        currentSubject: 'agronomia',
         currentCategory: 'all',
         currentStatus: 'all',
         searchQuery: '',
@@ -38,7 +37,7 @@
         // Sidebar
         sidebar: document.getElementById('sidebar'),
         menuToggle: document.getElementById('menuToggle'),
-        subjectBtns: document.querySelectorAll('.subject-btn'),
+        categoryNav: document.getElementById('categoryNav'),
         
         // Stats
         statLearned: document.getElementById('statLearned'),
@@ -116,15 +115,58 @@
     // ============================================================
     
     function getCategories() {
-        const categories = new Set();
+        const categoryCounts = {};
         cardsData.forEach(card => {
-            if (card.categoria) categories.add(card.categoria);
+            if (card.categoria) {
+                categoryCounts[card.categoria] = (categoryCounts[card.categoria] || 0) + 1;
+            }
         });
-        return Array.from(categories).sort();
+        return categoryCounts;
+    }
+
+    function renderSidebarCategories() {
+        const categoryCounts = getCategories();
+        const categories = Object.keys(categoryCounts).sort();
+        const total = cardsData.length;
+        
+        elements.categoryNav.innerHTML = `
+            <button class="category-btn active" data-category="all">
+                <span>Tutti gli argomenti</span>
+                <span class="count">${total}</span>
+            </button>
+            ${categories.map(cat => `
+                <button class="category-btn" data-category="${cat}">
+                    <span>${cat}</span>
+                    <span class="count">${categoryCounts[cat]}</span>
+                </button>
+            `).join('')}
+        `;
+        
+        // Add event listeners
+        elements.categoryNav.querySelectorAll('.category-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                elements.categoryNav.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                state.currentCategory = btn.dataset.category;
+                
+                // Also update the filter tags in main content to match
+                elements.categoryFilters.querySelectorAll('.filter-tag').forEach(tag => {
+                    tag.classList.toggle('active', tag.dataset.category === btn.dataset.category);
+                });
+                
+                renderCards();
+                
+                // Close sidebar on mobile
+                if (window.innerWidth <= 768) {
+                    elements.sidebar.classList.remove('open');
+                }
+            });
+        });
     }
 
     function renderCategoryFilters() {
-        const categories = getCategories();
+        const categoryCounts = getCategories();
+        const categories = Object.keys(categoryCounts).sort();
         elements.categoryFilters.innerHTML = `
             <button class="filter-tag active" data-category="all">Tutti</button>
             ${categories.map(cat => `
@@ -138,6 +180,12 @@
                 elements.categoryFilters.querySelectorAll('.filter-tag').forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
                 state.currentCategory = btn.dataset.category;
+                
+                // Also update the sidebar categories to match
+                elements.categoryNav.querySelectorAll('.category-btn').forEach(catBtn => {
+                    catBtn.classList.toggle('active', catBtn.dataset.category === btn.dataset.category);
+                });
+                
                 renderCards();
             });
         });
@@ -573,16 +621,6 @@
             }
         });
         
-        // Subject tabs
-        elements.subjectBtns.forEach(btn => {
-            btn.addEventListener('click', () => {
-                elements.subjectBtns.forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-                state.currentSubject = btn.dataset.subject;
-                // For now we only have agronomia data
-            });
-        });
-        
         // Search
         elements.searchInput.addEventListener('input', (e) => {
             state.searchQuery = e.target.value;
@@ -681,6 +719,7 @@
     
     function init() {
         initTheme();
+        renderSidebarCategories();
         renderCategoryFilters();
         renderCards();
         updatePomodoroDisplay();
