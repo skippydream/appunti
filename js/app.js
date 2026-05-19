@@ -5791,3 +5791,143 @@
         }
     });
     // --- FINE INTEGRAZIONE WIKIPEDIA LIVE ---
+
+    // ===== EXPORT / IMPORT BACKUP SYSTEM =====
+    (function() {
+        const BACKUP_KEYS_EXACT = [
+            'agronomia_study_states',
+            'agronomia_starred_cards',
+            'agronomia_sessions_calendar',
+            'agronomia_completed_sessions',
+            'theme'
+        ];
+
+        // Also capture all dynamic keys (biology_card_status_*, taxonomy_card_status_*, study_sessions, etc.)
+        function getAllRelevantKeys() {
+            const keys = [];
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (
+                    BACKUP_KEYS_EXACT.includes(key) ||
+                    key.startsWith('biology_card_status_') ||
+                    key.startsWith('taxonomy_card_status_') ||
+                    key === 'study_sessions'
+                ) {
+                    keys.push(key);
+                }
+            }
+            return keys;
+        }
+
+        function exportBackup() {
+            const keys = getAllRelevantKeys();
+            const backup = {
+                _meta: {
+                    app: 'Agronomia Study Dashboard',
+                    exportDate: new Date().toISOString(),
+                    keysCount: keys.length
+                }
+            };
+
+            keys.forEach(key => {
+                backup[key] = localStorage.getItem(key);
+            });
+
+            const json = JSON.stringify(backup, null, 2);
+            const blob = new Blob([json], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+
+            const now = new Date();
+            const dateStr = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
+            const filename = `studio_backup_${dateStr}.json`;
+
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+
+            // Visual feedback
+            const btn = document.getElementById('exportBtn');
+            if (btn) {
+                const orig = btn.innerHTML;
+                btn.innerHTML = '✅ Salvato!';
+                btn.style.background = 'var(--status-done)';
+                btn.style.color = '#fff';
+                btn.style.borderColor = 'var(--status-done)';
+                setTimeout(() => {
+                    btn.innerHTML = orig;
+                    btn.style.background = '';
+                    btn.style.color = '';
+                    btn.style.borderColor = '';
+                }, 2000);
+            }
+        }
+
+        function importBackup(file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const backup = JSON.parse(e.target.result);
+
+                    // Validate it's a real backup
+                    if (!backup._meta || backup._meta.app !== 'Agronomia Study Dashboard') {
+                        alert('⚠️ File non valido. Seleziona un file di backup generato da questa app.');
+                        return;
+                    }
+
+                    const exportDate = new Date(backup._meta.exportDate);
+                    const dateStr = exportDate.toLocaleDateString('it-IT', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+
+                    const confirm = window.confirm(
+                        `📂 Ripristinare il backup del ${dateStr}?\n\n` +
+                        `Contiene ${backup._meta.keysCount} elementi salvati.\n\n` +
+                        `⚠️ ATTENZIONE: Il progresso attuale verrà sovrascritto!`
+                    );
+
+                    if (!confirm) return;
+
+                    // Restore all keys (skip _meta)
+                    let restoredCount = 0;
+                    Object.keys(backup).forEach(key => {
+                        if (key === '_meta') return;
+                        localStorage.setItem(key, backup[key]);
+                        restoredCount++;
+                    });
+
+                    alert(`✅ Backup ripristinato con successo!\n${restoredCount} elementi caricati.\n\nLa pagina verrà ricaricata.`);
+                    window.location.reload();
+
+                } catch (err) {
+                    alert('❌ Errore nel leggere il file di backup:\n' + err.message);
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        // Wire up buttons
+        const exportBtn = document.getElementById('exportBtn');
+        const importBtn = document.getElementById('importBtn');
+        const importFileInput = document.getElementById('importFileInput');
+
+        if (exportBtn) {
+            exportBtn.addEventListener('click', exportBackup);
+        }
+
+        if (importBtn && importFileInput) {
+            importBtn.addEventListener('click', () => {
+                importFileInput.click();
+            });
+
+            importFileInput.addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    importBackup(file);
+                    importFileInput.value = ''; // Reset so same file can be re-imported
+                }
+            });
+        }
+    })();
+    // ===== END EXPORT / IMPORT BACKUP SYSTEM =====
