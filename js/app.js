@@ -3936,6 +3936,23 @@
             }
         };
 
+        function ensureActiveRecallRevealButtons(scope = document) {
+            scope.querySelectorAll('.card').forEach(card => {
+                if (card.querySelector('.active-recall-reveal-btn')) return;
+                const id = card.getAttribute('data-id') || card.id?.replace(/^card_/, '');
+                if (!id) return;
+
+                const revealBtn = document.createElement('div');
+                revealBtn.className = 'active-recall-reveal-btn';
+                revealBtn.textContent = '🔍 Mostra Risposta & Dettagli';
+                revealBtn.addEventListener('click', () => revealCard(id));
+
+                const tracker = card.querySelector('.card-tracker');
+                const footer = card.querySelector('.card-footer');
+                card.insertBefore(revealBtn, tracker || footer || null);
+            });
+        }
+
         function playAudioTone(freq, type, duration) {
             try {
                 const ctx = new (window.AudioContext || window.webkitAudioContext)();
@@ -4143,6 +4160,8 @@
             btnStandard.classList.add('active');
             btnActiveRecall.classList.remove('active');
             studyMode = 'standard';
+            bioRecallMode = false;
+            if (typeof updateBioRecallRendering === 'function') updateBioRecallRendering();
             updateFilters();
         });
 
@@ -4150,6 +4169,9 @@
             btnActiveRecall.classList.add('active');
             btnStandard.classList.remove('active');
             studyMode = 'recall';
+            bioRecallMode = true;
+            ensureActiveRecallRevealButtons();
+            if (typeof updateBioRecallRendering === 'function') updateBioRecallRendering();
             updateFilters();
             playAudioTone(700, 'triangle', 0.12);
         });
@@ -5098,6 +5120,10 @@
                     </div>
                 `;
                 
+                card.setAttribute("data-id", phylumKey);
+                card.id = `card_${phylumKey}`;
+                card.classList.toggle("active-recall-hidden", studyMode === "recall");
+                ensureActiveRecallRevealButtons(card);
                 grid.appendChild(card);
             });
         }
@@ -5535,6 +5561,37 @@
         initUnifiedApp();
 
         // ── UNIFIED OVERRIDES ────────────────────────────────────────────
+        function getSmartCategoryLinks(subject) {
+            if (subject !== 'agronomia') return {};
+            return {
+                "Introduzione": ["Introduzione"],
+                "Forme di agricoltura": ["Forme di agricoltura"],
+                "Suolo": ["Suolo"],
+                "Agrometeo": ["Agrometeo"],
+                "Lavorazioni": ["Lavorazioni"],
+                "Sistemazioni idraulico agrarie": ["Sistemazioni idraulico agrarie", "Drenaggio"],
+                "Irrigazione": ["Idrologia", "Metodi irrigui"],
+                "Chimica del suolo": ["Fertilizzazione e concimi", "Fertilizzanti non minerali e gestione"],
+                "Nutrizione minerale": ["Fertilizzazione e concimi", "Fertilizzanti non minerali e gestione"],
+                "Concimazione": ["Fertilizzazione e concimi", "Fertilizzanti non minerali e gestione"],
+                "Avversità": ["Malerbologia", "Infestanti importanti"],
+                "Erbologia": ["Malerbologia", "Infestanti importanti"],
+                "Gestione colture": ["Consociazione avvicendamento", "Malerbologia", "Infestanti importanti"]
+            };
+        }
+
+        function getFilterCategories(filterName) {
+            if (filterName === 'all') return null;
+            const links = getSmartCategoryLinks(activeSubject);
+            return links[filterName] || [filterName];
+        }
+
+        function filterMatchesCategory(filterName, categoryName) {
+            if (filterName === 'all') return true;
+            const categories = getFilterCategories(filterName);
+            return categories ? categories.includes(categoryName) : false;
+        }
+
         function rebuildCategoryTags(subject) {
             const container = document.getElementById('categoryTags');
             if (!container) return;
@@ -5553,6 +5610,7 @@
                     btn.classList.add('active');
                     currentFilter = btn.getAttribute('data-category');
                     updateFilters();
+                    renderDashboardRoadmap();
                     playAudioTone(600,'sine',0.05);
                 });
             });
@@ -5610,11 +5668,14 @@
                 ids.forEach(id => { if((studyStates[id]||'todo')==='done') done++; });
                 const pct = Math.round((done/ids.length)*100);
                 const cardEl = document.createElement('div');
-                cardEl.className = 'roadmap-card' + (currentFilter===cat?' active':'');
+                cardEl.className = 'roadmap-card' + (filterMatchesCategory(currentFilter, cat) ? ' active' : '');
                 cardEl.innerHTML = `<div class="roadmap-header"><span class="roadmap-name" title="${cat}"><span style="font-size:.72rem;font-weight:800;opacity:.4;margin-right:.25rem;">#${String(idx+1).padStart(2,'0')}</span>${cat}</span><span class="roadmap-pct">${done}/${ids.length}</span></div><div class="roadmap-bar-bg"><div class="roadmap-bar-fill" style="width:${pct}%"></div></div>`;
                 cardEl.addEventListener('click', () => {
-                    currentFilter = cat;
-                    document.querySelectorAll('#categoryTags .tag-btn').forEach(b=>b.classList.remove('active'));
+                    currentFilter = currentFilter === cat ? 'all' : cat;
+                    document.querySelectorAll('#categoryTags .tag-btn').forEach(btn => {
+                        const btnFilter = btn.getAttribute('data-category');
+                        btn.classList.toggle('active', btnFilter === currentFilter || filterMatchesCategory(btnFilter, currentFilter));
+                    });
                     updateFilters(); renderDashboardRoadmap();
                 });
                 container.appendChild(cardEl);
@@ -5623,6 +5684,7 @@
 
         function updateFilters() {
             let visibleCount = 0;
+            ensureActiveRecallRevealButtons();
             document.querySelectorAll('.card').forEach(card => {
                 const cardId = card.getAttribute('data-id');
                 const cardCat = card.getAttribute('data-category');
@@ -5631,7 +5693,7 @@
                 const isStarred = !!starredCards[cardId];
                 const cardSubject = card.getAttribute('data-subject') || 'agronomia';
                 const matchesSubject = cardSubject === activeSubject;
-                const matchesCategory = currentFilter === 'all' || cardCat === currentFilter;
+                const matchesCategory = filterMatchesCategory(currentFilter, cardCat);
                 const matchesSearch = cardSearch.includes(searchQuery);
                 let matchesStudyFilter = true;
                 if (currentStudyFilter === 'starred') matchesStudyFilter = isStarred;
@@ -5640,9 +5702,11 @@
                 else if (currentStudyFilter === 'done') matchesStudyFilter = cardStatus === 'done';
                 if (matchesSubject && matchesCategory && matchesSearch && matchesStudyFilter) {
                     card.style.display = 'flex';
+                    card.classList.toggle('active-recall-hidden', studyMode === 'recall');
                     visibleCount++;
                 } else {
                     card.style.display = 'none';
+                    card.classList.remove('active-recall-hidden');
                 }
             });
             const emptyState = document.getElementById('emptyState');
