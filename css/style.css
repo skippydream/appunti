@@ -2990,3 +2990,39 @@
         /* Evita l'auto-zoom del testo su iOS in orizzontale */
         html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
         img, svg, video { max-width: 100%; }
+
+        /* ============================================================
+           ANTI-OVERFLOW MOBILE — impedisce al contenuto di uscire dallo schermo
+           ============================================================ */
+        html, body { max-width: 100%; overflow-x: hidden; }
+
+        /* Il contenitore non supera mai la larghezza del viewport */
+        .container { width: 100%; }
+
+        /* Nessun blocco principale può eccedere la larghezza disponibile */
+        .container,
+        header, .subject-navbar, .dashboard-grid, .panel-box,
+        .control-panel, .cards-grid, .card {
+            max-width: 100%;
+        }
+
+        /* Spezza parole/sigle/valori molto lunghi invece di sfondare */
+        .card-title, .card-body, .note-ul, .note-sub, .note-intro,
+        .tip-content, .roadmap-name {
+            overflow-wrap: break-word;
+            word-break: break-word;
+        }
+
+        /* Formule MathJax larghe: scorrono dentro la card, non sfondano */
+        .card-body mjx-container {
+            max-width: 100%;
+            overflow-x: auto;
+            overflow-y: hidden;
+        }
+
+        /* Widget flottanti sempre dentro lo schermo */
+        .pomodoro-card { max-width: calc(100vw - 1.2em); }
+        .typo-panel-body { max-width: min(280px, 86vw); }
+
+        /* Tabelle/immagini eventuali */
+        table { max-width: 100%; }
