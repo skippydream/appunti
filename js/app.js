@@ -3991,36 +3991,8 @@ ightarrow$ mitocondrio</strong>. La fotorespirazione dissipa energia (consuma AT
             playUiSound('reveal');
         };
 
-        const typoTrigger = document.getElementById('typoPanelTrigger');
-        const typoBody = document.getElementById('typoPanelBody');
-
-        if (typoTrigger && typoBody) {
-            typoTrigger.addEventListener('click', () => {
-                const isOpen = typoBody.classList.contains('open');
-
-                playUiSound(isOpen ? 'close' : 'open');
-            });
-        }
-
-        const fontSlider = document.getElementById('fontSizeSlider');
-        if (fontSlider) {
-            fontSlider.addEventListener('input', () => {
-                playUiSound('soft');
-            });
-        }
-
-        const widthSlider = document.getElementById('widthSlider');
-        if (widthSlider) {
-            widthSlider.addEventListener('input', () => {
-                playUiSound('low');
-            });
-        }
-
-        document.querySelectorAll('.typo-preset-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
-                playUiSound('confirm');
-            });
-        });
+        // NB: the typography & layout panel (font size / reading width) is wired up
+        // by a dedicated self-contained script at the bottom of index.html.
 
         function ensureActiveRecallRevealButtons(scope = document) {
             scope.querySelectorAll('.card').forEach(card => {
@@ -4039,9 +4011,14 @@ ightarrow$ mitocondrio</strong>. La fotorespirazione dissipa energia (consuma AT
             });
         }
 
+        let _sharedAudioCtx = null;
         function playAudioTone(freq, type, duration) {
             try {
-                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                if (!_sharedAudioCtx) {
+                    _sharedAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                }
+                const ctx = _sharedAudioCtx;
+                if (ctx.state === 'suspended') ctx.resume();
                 const osc = ctx.createOscillator();
                 const gain = ctx.createGain();
                 osc.type = type;
@@ -4197,7 +4174,7 @@ ightarrow$ mitocondrio</strong>. La fotorespirazione dissipa energia (consuma AT
                     <div class="roadmap-header">
                         <span class="roadmap-name" title="${catName}">
                             <span style="font-size: 0.72rem; font-weight: 800; opacity: 0.4; letter-spacing: 0.05em; margin-right: 0.25rem;">#${displayIndex}</span>
-                            <span>${emoji}</span> ${catName}
+                            ${catName}
                         </span>
                         <span class="roadmap-pct">${doneCount}/${totalCount}</span>
                     </div>
@@ -4382,6 +4359,25 @@ ightarrow$ mitocondrio</strong>. La fotorespirazione dissipa energia (consuma AT
             return maxVal;
         }
 
+        // Date degli esami da evidenziare nel calendario
+        const EXAM_DATES = {
+            '2026-06-24': 'Esame · 24 giugno 2026',
+            '2026-07-22': 'Esame · 22 luglio 2026'
+        };
+
+        function nextExamInfo() {
+            const today = new Date(); today.setHours(0,0,0,0);
+            const upcoming = Object.keys(EXAM_DATES)
+                .map(d => { const [y,m,dd]=d.split('-').map(Number); return {d, date:new Date(y, m-1, dd)}; })
+                .filter(x => x.date >= today)
+                .sort((a,b) => a.date - b.date)[0];
+            if (!upcoming) return '';
+            const days = Math.round((upcoming.date - today) / 86400000);
+            const lbl = EXAM_DATES[upcoming.d].replace('Esame · ', '');
+            if (days === 0) return `Esame oggi (${lbl})`;
+            return `Prossimo esame tra ${days} giorn${days===1?'o':'i'} (${lbl})`;
+        }
+
         function renderActivityGrid() {
             const grid = document.getElementById('activityGrid');
             const monthsRow = document.getElementById('activityMonthsRow');
@@ -4446,22 +4442,15 @@ ightarrow$ mitocondrio</strong>. La fotorespirazione dissipa energia (consuma AT
                 else if (count === 3) level = 3;
                 else if (count > 3) level = 4;
 
-                // Nepal travel range: up to May 15th, 2026 (inclusive)
-                // Note: month is 0-indexed, so 4 is May
-                const isNepalDay = tempDate <= new Date(2026, 4, 15);
-                const isZeroSessions = count === 0;
+                const isExamDay = !!EXAM_DATES[dateStr];
 
                 const options = { day: 'numeric', month: 'short', year: 'numeric' };
                 const humanDate = tempDate.toLocaleDateString('it-IT', options);
-                
-                let label = '';
-                if (isNepalDay && isZeroSessions) {
-                    label = `Viaggio in Nepal 🏔️ (Nessuno studio il ${humanDate})`;
-                } else {
-                    label = count === 0 
-                        ? `Nessuna sessione il ${humanDate}` 
-                        : `${count} sessione${count > 1 ? 'i' : ''} completata${count > 1 ? 'e' : ''} il ${humanDate}`;
-                }
+
+                let label = count === 0
+                    ? `Nessuna sessione il ${humanDate}`
+                    : `${count} sessione${count > 1 ? 'i' : ''} completata${count > 1 ? 'e' : ''} il ${humanDate}`;
+                if (isExamDay) label = `${EXAM_DATES[dateStr]} — ${label}`;
 
                 const cell = document.createElement('div');
                 cell.className = 'activity-cell';
@@ -4474,13 +4463,9 @@ ightarrow$ mitocondrio</strong>. La fotorespirazione dissipa energia (consuma AT
                 if (dateStr === today) {
                     cell.classList.add('today');
                 }
-                
 
-                if (isNepalDay && isZeroSessions) {
-                    cell.classList.add('nepal');
-                } else {
-                    cell.classList.add(`level-${level}`);
-                }
+                cell.classList.add(`level-${level}`);
+                if (isExamDay) cell.classList.add('exam');
                 cell.title = label;
                 
                 cell.addEventListener('click', () => {
@@ -4507,7 +4492,10 @@ ightarrow$ mitocondrio</strong>. La fotorespirazione dissipa energia (consuma AT
             }
 
             if (activityLegend) {
-                activityLegend.textContent = `Ultime 12 settimane: ${totalSessionsInPeriod} sessioni`;
+                let legend = `${totalSessionsInPeriod} sessioni nel periodo`;
+                const nx = nextExamInfo();
+                if (nx) legend = nx + ' · ' + legend;
+                activityLegend.textContent = legend;
             }
 
             // Update metric elements
@@ -4533,94 +4521,127 @@ ightarrow$ mitocondrio</strong>. La fotorespirazione dissipa energia (consuma AT
             }
             
             if (completedSessionsCount === 0) {
-                sessionsList.textContent = 'Nessuna 💤';
+                sessionsList.textContent = 'Nessuna';
             } else {
-                if (completedSessionsCount <= 5) {
-                    sessionsList.textContent = '🍅'.repeat(completedSessionsCount);
-                } else {
-                    sessionsList.textContent = `🍅 x${completedSessionsCount}`;
-                }
+                sessionsList.textContent = completedSessionsCount === 1
+                    ? '1 sessione'
+                    : `${completedSessionsCount} sessioni`;
             }
+        }
+
+        const BASE_DOC_TITLE = document.title;
+
+        // Lightweight non-blocking toast notification (replaces alert)
+        let _toastTimer = null;
+        function showToast(msg) {
+            let t = document.getElementById('appToast');
+            if (!t) {
+                t = document.createElement('div');
+                t.id = 'appToast';
+                t.className = 'app-toast';
+                t.setAttribute('role', 'status');
+                document.body.appendChild(t);
+            }
+            t.textContent = msg;
+            // force reflow so the transition re-triggers on repeated toasts
+            void t.offsetWidth;
+            t.classList.add('show');
+            clearTimeout(_toastTimer);
+            _toastTimer = setTimeout(() => t.classList.remove('show'), 4500);
+        }
+
+        function getActiveTimerMode() {
+            return document.querySelector('.timer-mode-btn.active');
         }
 
         function updateTimerDisplay() {
             const minutes = Math.floor(timeLeft / 60);
             const seconds = timeLeft % 60;
-            timerDisplay.textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+            const txt = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+            timerDisplay.textContent = txt;
+            if (timerInterval) {
+                const isStudy = !!document.querySelector('#modeStudy.active');
+                document.title = `${txt} · ${isStudy ? 'Studio' : 'Pausa'} — Appunti`;
+            } else {
+                document.title = BASE_DOC_TITLE;
+            }
+        }
+
+        function setTimerRunningUI(running) {
+            pomodoroCard.classList.toggle('running', running);
+            timerStartBtn.textContent = running ? 'Pausa' : 'Avvia';
+        }
+
+        function stopTimerInterval() {
+            if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+        }
+
+        function selectTimerMode(btn) {
+            if (!btn) return;
+            document.querySelectorAll('.timer-mode-btn').forEach(b => b.classList.toggle('active', b === btn));
+            stopTimerInterval();
+            setTimerRunningUI(false);
+            timeLeft = parseInt(btn.getAttribute('data-time'));
+            updateTimerDisplay();
+        }
+
+        function onTimerComplete() {
+            stopTimerInterval();
+            setTimerRunningUI(false);
+            playAudioTone(880, 'sine', 0.8);
+
+            const isStudyMode = getActiveTimerMode() && getActiveTimerMode().id === 'modeStudy';
+            if (isStudyMode) {
+                const todayStr = getFormattedDate(new Date());
+                sessionsCalendar[todayStr] = (sessionsCalendar[todayStr] || 0) + 1;
+                localStorage.setItem('agronomia_sessions_calendar', JSON.stringify(sessionsCalendar));
+                recalculateTotalCompletedSessions();
+                updateSessionsUI();
+                renderActivityGrid();
+                playAudioTone(1200, 'sine', 0.4);
+            }
+
+            // Auto-switch to the complementary mode, ready to start
+            selectTimerMode(isStudyMode ? modeBreak : modeStudy);
+            showToast(isStudyMode
+                ? 'Sessione completata. Prenditi 5 minuti di pausa.'
+                : 'Pausa finita. Pronto a riprendere lo studio.');
+            document.title = BASE_DOC_TITLE;
         }
 
         function startTimer() {
             if (timerInterval) {
-                clearInterval(timerInterval);
-                timerInterval = null;
-                timerStartBtn.textContent = 'Avvia';
-                timerStartBtn.style.backgroundColor = 'var(--text-primary)';
-                timerStartBtn.style.color = 'var(--bg-secondary)';
-                pomodoroCard.classList.remove('running');
+                stopTimerInterval();
+                setTimerRunningUI(false);
+                updateTimerDisplay();
                 playAudioTone(440, 'sawtooth', 0.15);
             } else {
-                pomodoroCard.classList.add('running');
+                setTimerRunningUI(true);
+                playAudioTone(587, 'sine', 0.15);
                 timerInterval = setInterval(() => {
                     if (timeLeft > 0) {
                         timeLeft--;
                         updateTimerDisplay();
                     } else {
-                        clearInterval(timerInterval);
-                        timerInterval = null;
-                        timerStartBtn.textContent = 'Avvia';
-                        pomodoroCard.classList.remove('running');
-                        playAudioTone(880, 'sine', 0.8);
-                        
-                        const currentMode = document.querySelector('.timer-mode-btn.active');
-                        const isStudyMode = currentMode && currentMode.id === 'modeStudy';
-                        if (isStudyMode) {
-                            const todayStr = getFormattedDate(new Date());
-                            sessionsCalendar[todayStr] = (sessionsCalendar[todayStr] || 0) + 1;
-                            localStorage.setItem('agronomia_sessions_calendar', JSON.stringify(sessionsCalendar));
-                            recalculateTotalCompletedSessions();
-                            updateSessionsUI();
-                            renderActivityGrid();
-                            playAudioTone(1200, 'sine', 0.4);
-                        }
-                        
-                        alert(isStudyMode ? "Ottimo lavoro! Sessione completata! Fai una pausa di 5 minuti!" : "Pausa finita! Pronto a riprendere a studiare?");
+                        onTimerComplete();
                     }
                 }, 1000);
-                timerStartBtn.textContent = 'Pausa';
-                timerStartBtn.style.backgroundColor = 'var(--status-review)';
-                timerStartBtn.style.color = 'white';
-                playAudioTone(587, 'sine', 0.15);
+                updateTimerDisplay();
             }
         }
 
         function resetTimer() {
-            clearInterval(timerInterval);
-            timerInterval = null;
-            pomodoroCard.classList.remove('running');
-            const currentMode = document.querySelector('.timer-mode-btn.active');
+            stopTimerInterval();
+            setTimerRunningUI(false);
+            const currentMode = getActiveTimerMode();
             timeLeft = parseInt(currentMode.getAttribute('data-time'));
-            timerStartBtn.textContent = 'Avvia';
-            timerStartBtn.style.backgroundColor = 'var(--text-primary)';
-            timerStartBtn.style.color = 'var(--bg-secondary)';
             updateTimerDisplay();
         }
 
         timerStartBtn.addEventListener('click', startTimer);
         timerResetBtn.addEventListener('click', resetTimer);
-
-        modeStudy.addEventListener('click', () => {
-            modeStudy.classList.add('active');
-            modeBreak.classList.remove('active');
-            timeLeft = 1500;
-            resetTimer();
-        });
-
-        modeBreak.addEventListener('click', () => {
-            modeBreak.classList.add('active');
-            modeStudy.classList.remove('active');
-            timeLeft = 300;
-            resetTimer();
-        });
+        modeStudy.addEventListener('click', () => selectTimerMode(modeStudy));
+        modeBreak.addEventListener('click', () => selectTimerMode(modeBreak));
 
         // Collapsible/Floating Pomodoro Widget size actions
         timerToggleSizeBtn.addEventListener('click', (e) => {
@@ -4673,11 +4694,9 @@ ightarrow$ mitocondrio</strong>. La fotorespirazione dissipa energia (consuma AT
             const currentTheme = document.body.getAttribute('data-theme');
             if (currentTheme === 'light') {
                 document.body.removeAttribute('data-theme');
-                themeBtn.textContent = '🌙';
                 localStorage.setItem('theme', 'dark');
             } else {
                 document.body.setAttribute('data-theme', 'light');
-                themeBtn.textContent = '☀️';
                 localStorage.setItem('theme', 'light');
             }
             if (window.MathJax) {
@@ -4688,7 +4707,6 @@ ightarrow$ mitocondrio</strong>. La fotorespirazione dissipa energia (consuma AT
         const savedTheme = localStorage.getItem('theme');
         if (savedTheme === 'light') {
             document.body.setAttribute('data-theme', 'light');
-            themeBtn.textContent = '☀️';
         }
 
         const quizBtn = document.getElementById('quizBtn');
@@ -4958,19 +4976,15 @@ ightarrow$ mitocondrio</strong>. La fotorespirazione dissipa energia (consuma AT
             const logoText = document.getElementById("logoText");
             
             if (subject === "agronomia") {
-                logoIcon.textContent = "🚜";
                 logoText.textContent = "Agronomia";
             } else if (subject === "biologia") {
-                logoIcon.textContent = "🧬";
                 logoText.textContent = "Biologia & Istologia";
                 renderBioSidebar();
                 renderBioContent();
             } else if (subject === "botanica") {
-                logoIcon.textContent = "🌿";
                 logoText.textContent = "Botanica";
                 renderTaxonomyGrid();
             } else if (subject === "quiz-view") {
-                logoIcon.textContent = "🧠";
                 logoText.textContent = "Quiz Universale";
             }
             
@@ -5062,10 +5076,10 @@ ightarrow$ mitocondrio</strong>. La fotorespirazione dissipa energia (consuma AT
                         <span class="card-tag cat-violet">🧬 Biologia Molecolare & Istologia</span>
                         
                         <div class="card-tracker" style="margin-top:0;">
-                            <button class="tracker-btn btn-status-todo ${currentStatus === 'todo' ? 'active' : ''}" onclick="setBioCardStatus('${activeBioTopic}', 'todo')">⚪ Todo</button>
-                            <button class="tracker-btn btn-status-review ${currentStatus === 'review' ? 'active' : ''}" onclick="setBioCardStatus('${activeBioTopic}', 'review')">🔴 Ripassa</button>
-                            <button class="tracker-btn btn-status-progress ${currentStatus === 'progress' ? 'active' : ''}" onclick="setBioCardStatus('${activeBioTopic}', 'progress')">🟡 In corso</button>
-                            <button class="tracker-btn btn-status-done ${currentStatus === 'done' ? 'active' : ''}" onclick="setBioCardStatus('${activeBioTopic}', 'done')">🟢 Imparato</button>
+                            <button class="tracker-btn btn-status-todo ${currentStatus === 'todo' ? 'active' : ''}" onclick="setBioCardStatus('${activeBioTopic}', 'todo')"><span class="tb-dot"></span> Todo</button>
+                            <button class="tracker-btn btn-status-review ${currentStatus === 'review' ? 'active' : ''}" onclick="setBioCardStatus('${activeBioTopic}', 'review')"><span class="tb-dot"></span> Ripassa</button>
+                            <button class="tracker-btn btn-status-progress ${currentStatus === 'progress' ? 'active' : ''}" onclick="setBioCardStatus('${activeBioTopic}', 'progress')"><span class="tb-dot"></span> In corso</button>
+                            <button class="tracker-btn btn-status-done ${currentStatus === 'done' ? 'active' : ''}" onclick="setBioCardStatus('${activeBioTopic}', 'done')"><span class="tb-dot"></span> Imparato</button>
                         </div>
                     </div>
                 </div>
@@ -5210,10 +5224,10 @@ ightarrow$ mitocondrio</strong>. La fotorespirazione dissipa energia (consuma AT
                     </div>
                     
                     <div class="card-tracker" style="margin-top: 1.5rem; border-top: 1.5px solid var(--border-elegant); padding-top: 1rem;">
-                        <button class="tracker-btn btn-status-todo ${currentStatus === 'todo' ? 'active' : ''}" onclick="setTaxonomyCardStatus('${phylum.phylum}', 'todo')">⚪ Todo</button>
-                        <button class="tracker-btn btn-status-review ${currentStatus === 'review' ? 'active' : ''}" onclick="setTaxonomyCardStatus('${phylum.phylum}', 'review')">🔴 Ripassa</button>
-                        <button class="tracker-btn btn-status-progress ${currentStatus === 'progress' ? 'active' : ''}" onclick="setTaxonomyCardStatus('${phylum.phylum}', 'progress')">🟡 Quasi</button>
-                        <button class="tracker-btn btn-status-done ${currentStatus === 'done' ? 'active' : ''}" onclick="setTaxonomyCardStatus('${phylum.phylum}', 'done')">🟢 Fatto</button>
+                        <button class="tracker-btn btn-status-todo ${currentStatus === 'todo' ? 'active' : ''}" onclick="setTaxonomyCardStatus('${phylum.phylum}', 'todo')"><span class="tb-dot"></span> Todo</button>
+                        <button class="tracker-btn btn-status-review ${currentStatus === 'review' ? 'active' : ''}" onclick="setTaxonomyCardStatus('${phylum.phylum}', 'review')"><span class="tb-dot"></span> Ripassa</button>
+                        <button class="tracker-btn btn-status-progress ${currentStatus === 'progress' ? 'active' : ''}" onclick="setTaxonomyCardStatus('${phylum.phylum}', 'progress')"><span class="tb-dot"></span> Quasi</button>
+                        <button class="tracker-btn btn-status-done ${currentStatus === 'done' ? 'active' : ''}" onclick="setTaxonomyCardStatus('${phylum.phylum}', 'done')"><span class="tb-dot"></span> Fatto</button>
                     </div>
                 `;
                 
@@ -5418,7 +5432,7 @@ ightarrow$ mitocondrio</strong>. La fotorespirazione dissipa energia (consuma AT
                         <div class="roadmap-header">
                             <span class="roadmap-name" title="${catName}">
                                 <span style="font-size: 0.72rem; font-weight: 800; opacity: 0.4; letter-spacing: 0.05em; margin-right: 0.25rem;">#${displayIndex}</span>
-                                <span>${emoji}</span> ${catName}
+                                ${catName}
                             </span>
                             <span class="roadmap-pct">${doneCount}/${totalCount}</span>
                         </div>
@@ -5466,7 +5480,7 @@ ightarrow$ mitocondrio</strong>. La fotorespirazione dissipa energia (consuma AT
                         <div class="roadmap-header">
                             <span class="roadmap-name" title="${group.title}">
                                 <span style="font-size: 0.72rem; font-weight: 800; opacity: 0.4; letter-spacing: 0.05em; margin-right: 0.25rem;">#${displayIndex}</span>
-                                <span>${group.emoji}</span> ${group.title}
+                                ${group.title}
                             </span>
                             <span class="roadmap-pct">${doneCount}/${groupItems.length}</span>
                         </div>
@@ -5517,7 +5531,7 @@ ightarrow$ mitocondrio</strong>. La fotorespirazione dissipa energia (consuma AT
                         <div class="roadmap-header">
                             <span class="roadmap-name" title="${div.title}">
                                 <span style="font-size: 0.72rem; font-weight: 800; opacity: 0.4; letter-spacing: 0.05em; margin-right: 0.25rem;">#${displayIndex}</span>
-                                <span>${div.emoji}</span> ${div.title}
+                                ${div.title}
                             </span>
                             <span class="roadmap-pct">${doneCount}/${divItems.length}</span>
                         </div>
@@ -5718,9 +5732,7 @@ ightarrow$ mitocondrio</strong>. La fotorespirazione dissipa energia (consuma AT
             document.querySelectorAll('.subj-tab').forEach(btn => {
                 btn.classList.toggle('active', btn.getAttribute('data-subject') === subject);
             });
-            const icons = {agronomia:'🚜', biologia:'🧬', botanica:'🌿'};
             const labels = {agronomia:'Agronomia', biologia:'Biologia', botanica:'Botanica'};
-            const li = document.getElementById('logoIcon'); if(li) li.textContent = icons[subject]||'📚';
             const lt = document.getElementById('logoText'); if(lt) lt.textContent = labels[subject]||'Studio';
             if(typeof searchBar!=='undefined' && searchBar) { searchBar.value=''; searchQuery=''; }
             currentFilter = 'all';
@@ -6132,10 +6144,10 @@ function createCardTracker(id) {
     wrapper.className = 'card-tracker';
 
     wrapper.innerHTML = `
-        <button class="tracker-btn btn-status-todo" data-id="${id}" data-status="todo">⚪ Non iniziato</button>
-        <button class="tracker-btn btn-status-review" data-id="${id}" data-status="review">🔴 Da ripassare</button>
-        <button class="tracker-btn btn-status-progress" data-id="${id}" data-status="progress">🟡 Quasi pronto</button>
-        <button class="tracker-btn btn-status-done" data-id="${id}" data-status="done">🟢 Imparato</button>
+        <button class="tracker-btn btn-status-todo" data-id="${id}" data-status="todo"><span class="tb-dot"></span> Non iniziato</button>
+        <button class="tracker-btn btn-status-review" data-id="${id}" data-status="review"><span class="tb-dot"></span> Da ripassare</button>
+        <button class="tracker-btn btn-status-progress" data-id="${id}" data-status="progress"><span class="tb-dot"></span> Quasi pronto</button>
+        <button class="tracker-btn btn-status-done" data-id="${id}" data-status="done"><span class="tb-dot"></span> Imparato</button>
     `;
 
     return wrapper;

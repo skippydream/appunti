@@ -1,2 +1,6 @@
 .DS_Store
-.DS_Store
+.work/
+
+# Dispense PDF (troppo grande per il repo / deploy)
+*.pdf
+dispense_agronomia copia.pdf
