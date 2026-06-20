@@ -13,6 +13,11 @@
   const API = '/api/state';
   const META = '__sync_meta_v1';
 
+  // Chiavi legate al SINGOLO dispositivo: NON vanno sincronizzate.
+  // La tipografia (font/larghezza) dipende dalla dimensione del display: se la
+  // si sincronizza, il telefono erediterebbe i valori del desktop e sforerebbe.
+  const DEVICE_LOCAL = new Set([META, 'typo_prefs_v1', 'typo_prefs_v2']);
+
   let ready = false;          // true dopo il primo pull: evita push prematuri (race)
   let serverEnabled = true;   // false se il KV non è configurato (501)
   let pushTimer = null;
@@ -40,14 +45,14 @@
     const o = {};
     for (let i = 0; i < localStorage.length; i++) {
       const k = localStorage.key(i);
-      if (k === META) continue;
+      if (DEVICE_LOCAL.has(k)) continue;
       o[k] = localStorage.getItem(k);
     }
     return o;
   }
 
   function applySnapshot(data) {
-    Object.keys(data).forEach((k) => { if (k !== META) origSet(k, data[k]); });
+    Object.keys(data).forEach((k) => { if (!DEVICE_LOCAL.has(k)) origSet(k, data[k]); });
   }
 
   async function pull() {
@@ -99,7 +104,7 @@
   // Intercetta ogni scrittura del progresso per sincronizzare in automatico.
   localStorage.setItem = function (k, v) {
     origSet(k, v);
-    if (k !== META) schedulePush();
+    if (!DEVICE_LOCAL.has(k)) schedulePush();
   };
 
   // Se l'utente lascia la pagina con modifiche in coda, prova a salvare subito.
