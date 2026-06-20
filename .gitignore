@@ -4,3 +4,10 @@
 # Dispense PDF (troppo grande per il repo / deploy)
 *.pdf
 dispense_agronomia copia.pdf
+
+# wrangler files
+.wrangler
+.dev.vars*
+!.dev.vars.example
+.env*
+!.env.example
