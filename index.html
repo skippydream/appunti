@@ -8092,14 +8092,29 @@ regolazione ormonale: quando la foglia invecchia (senescenza), la sua produzione
             } catch (_) {}
         }
 
+        // Default tipografico calcolato in base alla dimensione del display,
+        // usato finché l'utente non regola manualmente il widget (poi vince la sua scelta).
+        function autoDefaults() {
+            const vw = window.innerWidth || 1024;
+            if (vw < 480)  return { font: 92,  width: 760 };
+            if (vw < 768)  return { font: 96,  width: 920 };
+            if (vw < 1200) return { font: 100, width: 1060 };
+            if (vw < 1600) return { font: 104, width: 1220 };
+            return { font: 110, width: 1340 };
+        }
+
         function loadPrefs() {
             try {
                 const p = JSON.parse(localStorage.getItem(LS_KEY) || 'null');
-                if (p) {
-                    fontSlider.value  = p.font  || 100;
-                    widthSlider.value = p.width || 1060;
+                if (p && p.font && p.width) {
+                    fontSlider.value  = p.font;
+                    widthSlider.value = p.width;
+                    return;
                 }
             } catch (_) {}
+            const d = autoDefaults();           // nessuna preferenza salvata -> calcolo dal display
+            fontSlider.value  = d.font;
+            widthSlider.value = d.width;
         }
 
         // ── Apply values ──────────────────────────────────────

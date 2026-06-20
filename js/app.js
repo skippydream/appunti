@@ -4270,6 +4270,10 @@ ightarrow$ mitocondrio</strong>. La fotorespirazione dissipa energia (consuma AT
         const modeBreak = document.getElementById('modeBreak');
         const timerToggleSizeBtn = document.getElementById('timerToggleSizeBtn');
         const pomodoroCard = document.querySelector('.pomodoro-card');
+        // Su schermi piccoli il timer parte minimizzato per non coprire il contenuto
+        if (pomodoroCard && window.innerWidth < 640) {
+            pomodoroCard.classList.add('minimized');
+        }
 
         // Sessions counter tracking state
         let completedSessionsCount = parseInt(localStorage.getItem('agronomia_completed_sessions') || '0');
