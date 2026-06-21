@@ -4599,69 +4599,8 @@ ightarrow$ mitocondrio</strong>. La fotorespirazione dissipa energia (consuma AT
             else if (darkMq.addListener) darkMq.addListener(onSystemThemeChange);
         }
 
-        const quizBtn = document.getElementById('quizBtn');
-        const quizModal = document.getElementById('quizModal');
-        const closeQuizModal = document.getElementById('closeQuizModal');
-        const modalQuizTitle = document.getElementById('modalQuizTitle');
-        const modalQuizTag = document.getElementById('modalQuizTag');
-        const modalQuizAnswer = document.getElementById('modalQuizAnswer');
-        const quizShowAnswerBtn = document.getElementById('quizShowAnswerBtn');
-        const quizNextBtn = document.getElementById('quizNextBtn');
-        const quizGotItBtn = document.getElementById('quizGotItBtn');
-        let currentQuizCard = null;
-
-        function loadRandomQuiz() {
-            const randomIndex = Math.floor(Math.random() * cardsData.length);
-            const card = cardsData[randomIndex];
-            currentQuizCard = card;
-
-            modalQuizTitle.textContent = card.titolo;
-            modalQuizTag.textContent = card.categoria;
-            modalQuizTag.className = `card-tag ${cssTagMapping[card.categoria] || 'cat-slate'}`;
-            
-            const cardEl = document.getElementById(`card_${card.id}`);
-            if (cardEl) {
-                const bodyHTML = cardEl.querySelector('.card-body').innerHTML;
-                modalQuizAnswer.innerHTML = bodyHTML;
-            } else {
-                modalQuizAnswer.textContent = card.descrizione_raw;
-            }
-
-            modalQuizAnswer.style.display = 'none';
-            quizShowAnswerBtn.style.display = 'inline-block';
-            
-            if (window.MathJax) {
-                MathJax.typesetPromise([modalQuizAnswer]);
-            }
-            playAudioTone(600, 'sine', 0.1);
-        }
-
-        quizBtn.addEventListener('click', () => {
-            loadRandomQuiz();
-            quizModal.style.display = 'flex';
-        });
-
-        closeQuizModal.addEventListener('click', () => {
-            quizModal.style.display = 'none';
-        });
-
-        quizShowAnswerBtn.addEventListener('click', () => {
-            modalQuizAnswer.style.display = 'block';
-            quizShowAnswerBtn.style.display = 'none';
-            playAudioTone(750, 'sine', 0.08);
-            if (window.MathJax) {
-                MathJax.typesetPromise([modalQuizAnswer]);
-            }
-        });
-
-        quizNextBtn.addEventListener('click', loadRandomQuiz);
-
-        quizGotItBtn.addEventListener('click', () => {
-            if (currentQuizCard) {
-                setCardStatus(currentQuizCard.id, 'done');
-                quizModal.style.display = 'none';
-            }
-        });
+        // Il "Quiz" casuale è stato sostituito dal Ripasso a ripetizione
+        // spaziata (js/srs.js), che fa la stessa cosa ma in modo programmato.
 
         // Dynamic Cosmic Constellations Map Hub Overlay
         const cosmicOverlay = document.getElementById('cosmicOverlay');

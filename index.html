@@ -56,7 +56,7 @@
         };
     </script>
     <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
-    <link rel="stylesheet" href="./css/style.css?v=20260621-9">
+    <link rel="stylesheet" href="./css/style.css?v=20260621-10">
 
     <!-- ============================================================
          BOOT PRE-PAINT — tema, tipografia e gate di avvio.
@@ -157,7 +157,6 @@
             </div>
             <div class="header-actions">
                 <button class="header-btn" id="graphOpenBtn" title="Mappa concettuale">Mappa concetti</button>
-                <button class="header-btn" id="quizBtn" title="Autovalutazione rapida">Quiz</button>
                 <span class="sync-status" id="syncStatus" title="Il progresso viene salvato automaticamente sul server">
                     <span class="sync-dot"></span><span id="syncLabel">Sincronizzo…</span>
                 </span>
@@ -8069,28 +8068,6 @@ regolazione ormonale: quando la foglia invecchia (senescenza), la sua produzione
     </div>
 
     <!-- Self-Test Modal -->
-    <div class="modal-overlay" id="quizModal">
-        <div class="modal-box">
-            <div class="modal-header">
-                <h3 class="modal-title">🧠 Test di Richiamo Attivo</h3>
-                <button class="close-modal" id="closeQuizModal">&times;</button>
-            </div>
-            <p style="color:var(--text-secondary); font-size:0.9rem; font-family:var(--font-ui);">Ho selezionato una scheda casuale. Mettiti alla prova ed espone il concetto a mente prima di controllare la risposta!</p>
-            <div class="modal-quiz-card">
-                <span class="card-tag" id="modalQuizTag" style="align-self:flex-start;">TAG</span>
-                <div class="modal-quiz-question" id="modalQuizTitle">Domanda del quiz</div>
-                <div class="modal-quiz-answer tex2jax_process" id="modalQuizAnswer">Risposta corretta...</div>
-            </div>
-            <div class="quiz-actions">
-                <button class="quiz-btn" id="quizShowAnswerBtn">Mostra Risposta</button>
-                <div style="display:flex; gap:0.5rem;">
-                    <button class="quiz-btn" id="quizNextBtn">Prossima</button>
-                    <button class="quiz-btn primary" id="quizGotItBtn">Imparata!</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <!-- Full-Screen Interactive Cosmic Constellation Map Overlay -->
     <div class="cosmic-overlay" id="cosmicOverlay">
         <div class="cosmic-header">
@@ -8361,10 +8338,10 @@ regolazione ormonale: quando la foglia invecchia (senescenza), la sua produzione
     </script>
     <!-- Active JS Study Engine -->
     <!-- ?v= : cache-busting per garantire JS/CSS aggiornati dopo ogni deploy -->
-    <script src="./js/app.js?v=20260621-9"></script>
+    <script src="./js/app.js?v=20260621-10"></script>
     <!-- Persistenza automatica sul server (Cloudflare Pages Functions + KV) -->
-    <script src="./js/sync.js?v=20260621-9"></script>
+    <script src="./js/sync.js?v=20260621-10"></script>
     <!-- Ripetizione spaziata (SM-2) -->
-    <script src="./js/srs.js?v=20260621-9"></script>
+    <script src="./js/srs.js?v=20260621-10"></script>
 </body>
 </html>

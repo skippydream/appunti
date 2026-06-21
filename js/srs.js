@@ -154,8 +154,8 @@
     openBtn.id = 'srsOpenBtn';
     openBtn.title = 'Ripasso a ripetizione spaziata';
     openBtn.innerHTML = 'Ripasso <span class="srs-badge" id="srsBadge">0</span>';
-    const quizBtn = document.getElementById('quizBtn');
-    if (quizBtn && quizBtn.parentElement) quizBtn.parentElement.insertBefore(openBtn, quizBtn);
+    const anchor = document.getElementById('graphOpenBtn');   // "Mappa concetti"
+    if (anchor && anchor.parentElement) anchor.parentElement.insertBefore(openBtn, anchor.nextSibling);
     else { const ha = document.querySelector('.header-actions'); if (ha) ha.insertBefore(openBtn, ha.firstChild); }
     openBtn.addEventListener('click', openReview);
 
