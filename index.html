@@ -18,13 +18,111 @@
             options: {
                 ignoreHtmlClass: 'tex2jax_ignore',
                 processHtmlClass: 'tex2jax_process'
+            },
+            startup: {
+                // Quando il primo typeset è concluso, le formule sono già
+                // renderizzate: sblocca il gate di avvio (vedi boot script).
+                pageReady: function () {
+                    return MathJax.startup.defaultPageReady().then(function () {
+                        if (window.__boot) window.__boot.mathReady();
+                    });
+                }
             }
         };
     </script>
     <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
-    <link rel="stylesheet" href="./css/style.css">
+    <link rel="stylesheet" href="./css/style.css?v=20260621-4">
+
+    <!-- ============================================================
+         BOOT PRE-PAINT — tema, tipografia e gate di avvio.
+         Gira PRIMA del primo paint: il primo frame visibile ha già
+         tema, font e larghezza definitivi (niente FOUC né "ricalcoli"
+         a schermo all'apertura).
+         ============================================================ -->
+    <script>
+    (function () {
+        'use strict';
+        var html = document.documentElement;
+        var ls = null;
+        try { ls = window.localStorage; } catch (e) { ls = null; }
+
+        // ── TEMA ──────────────────────────────────────────────────
+        // Default: segue le impostazioni di sistema (prefers-color-scheme).
+        // L'eventuale scelta manuale è salvata SOLO in locale, mai su KV.
+        try {
+            var savedTheme = ls && ls.getItem('theme');            // 'light' | 'dark' | null
+            var systemLight = window.matchMedia &&
+                window.matchMedia('(prefers-color-scheme: light)').matches;
+            var useLight = savedTheme ? (savedTheme === 'light') : systemLight;
+            if (useLight) html.setAttribute('data-theme', 'light');
+        } catch (e) {}
+
+        // ── TIPOGRAFIA (dimensione font + larghezza contenuto) ────
+        // Applicata qui per avere il primo paint già corretto. La stessa
+        // logica vive nel pannello tipografico a fondo pagina: i due punti
+        // restano allineati e idempotenti.
+        try {
+            var autoDefaults = function (vw) {
+                // Larghezza = colonna di lettura, NON la larghezza dello schermo:
+                // resta sempre sotto il viewport per lasciare margini ai lati.
+                if (vw < 480)  return { font: 92,  width: 680 };
+                if (vw < 768)  return { font: 96,  width: 760 };
+                if (vw < 1200) return { font: 100, width: 920 };
+                if (vw < 1600) return { font: 104, width: 1040 };
+                return { font: 110, width: 1160 };
+            };
+            var prefs = null;
+            try { prefs = JSON.parse((ls && ls.getItem('typo_prefs_v2')) || 'null'); } catch (_) {}
+            var font, width;
+            if (prefs && prefs.font && prefs.width) {
+                font = +prefs.font; width = +prefs.width;
+            } else {
+                var d = autoDefaults(window.innerWidth || 1024);
+                font = d.font; width = d.width;
+            }
+            html.style.fontSize = (16 * font / 100) + 'px';
+            html.style.setProperty('--container-max', width + 'px');
+        } catch (e) {}
+
+        // ── GATE DI AVVIO ─────────────────────────────────────────
+        // Il contenuto resta nascosto finché l'init (DOM) e il primo
+        // typeset di MathJax non sono pronti: così il primo frame visibile
+        // coincide con lo stato finale, formule comprese (niente pop-in né
+        // "ricalcoli" a vista). Cap di sicurezza per non restare mai
+        // bloccati su schermo nascosto.
+        // La sincronizzazione NON blocca la comparsa: se serve un reload
+        // (dati più recenti su un altro dispositivo) è sync.js stesso a
+        // rimettere la pagina in stato "booting" prima di ricaricare.
+        html.classList.add('booting');
+        window.__boot = (function () {
+            var revealed = false;
+            var flags = { dom: false, math: false };
+            var waitMath = true;
+            var ready = function () { return flags.dom && (flags.math || !waitMath); };
+            var reveal = function () {
+                if (revealed) return;
+                revealed = true;
+                html.classList.remove('booting');
+                html.classList.add('booted');
+            };
+            var mark = function (name) { flags[name] = true; if (ready()) reveal(); };
+            // Le formule MathJax possono tardare (CDN lenta/bloccata): non
+            // aspettarle oltre 1.2s.
+            setTimeout(function () { waitMath = false; if (ready()) reveal(); }, 1200);
+            // Failsafe assoluto: mostra comunque entro 2.5s.
+            setTimeout(reveal, 2500);
+            return {
+                domReady:  function () { mark('dom'); },
+                mathReady: function () { mark('math'); },
+                reveal:    reveal
+            };
+        })();
+    })();
+    </script>
 </head>
 <body>
+    <!-- Loader del gate di avvio: visibile solo mentre html.booting è attivo -->
+    <div id="bootLoader" aria-hidden="true"><div class="boot-spinner"></div></div>
     <div class="container">
         <!-- Header -->
         <header>
@@ -8094,13 +8192,14 @@ regolazione ormonale: quando la foglia invecchia (senescenza), la sua produzione
 
         // Default tipografico calcolato in base alla dimensione del display,
         // usato finché l'utente non regola manualmente il widget (poi vince la sua scelta).
+        // NB: deve restare allineata all'autoDefaults del boot script in <head>.
         function autoDefaults() {
             const vw = window.innerWidth || 1024;
-            if (vw < 480)  return { font: 92,  width: 760 };
-            if (vw < 768)  return { font: 96,  width: 920 };
-            if (vw < 1200) return { font: 100, width: 1060 };
-            if (vw < 1600) return { font: 104, width: 1220 };
-            return { font: 110, width: 1340 };
+            if (vw < 480)  return { font: 92,  width: 680 };
+            if (vw < 768)  return { font: 96,  width: 760 };
+            if (vw < 1200) return { font: 100, width: 920 };
+            if (vw < 1600) return { font: 104, width: 1040 };
+            return { font: 110, width: 1160 };
         }
 
         function loadPrefs() {
@@ -8129,8 +8228,9 @@ regolazione ormonale: quando la foglia invecchia (senescenza), la sua produzione
         }
 
         function applyWidth(val) {
-            const container = document.querySelector('.container');
-            if (container) container.style.maxWidth = val + 'px';
+            // Sorgente unica: la .container usa max-width: var(--container-max).
+            // Lo stesso valore è già impostato pre-paint dal boot script.
+            document.documentElement.style.setProperty('--container-max', val + 'px');
             widthValue.textContent = val + 'px';
             widthSlider.setAttribute('aria-valuenow', val);
             updateFill(widthFill, widthSlider);
@@ -8235,9 +8335,9 @@ regolazione ormonale: quando la foglia invecchia (senescenza), la sua produzione
     })();
     </script>
     <!-- Active JS Study Engine -->
-    <script src="./js/data.js"></script>
-    <script src="./js/app.js"></script>
+    <!-- ?v= : cache-busting per garantire JS/CSS aggiornati dopo ogni deploy -->
+    <script src="./js/app.js?v=20260621-4"></script>
     <!-- Persistenza automatica sul server (Cloudflare Pages Functions + KV) -->
-    <script src="./js/sync.js"></script>
+    <script src="./js/sync.js?v=20260621-4"></script>
 </body>
 </html>

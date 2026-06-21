@@ -13,10 +13,12 @@
   const API = '/api/state';
   const META = '__sync_meta_v1';
 
-  // Chiavi legate al SINGOLO dispositivo: NON vanno sincronizzate.
-  // La tipografia (font/larghezza) dipende dalla dimensione del display: se la
-  // si sincronizza, il telefono erediterebbe i valori del desktop e sforerebbe.
-  const DEVICE_LOCAL = new Set([META, 'typo_prefs_v1', 'typo_prefs_v2']);
+  // Chiavi legate al SINGOLO dispositivo: NON vanno sincronizzate su KV.
+  // - La tipografia (font/larghezza) dipende dalla dimensione del display: se la
+  //   si sincronizza, il telefono erediterebbe i valori del desktop e sforerebbe.
+  // - Il tema segue le impostazioni di sistema; l'eventuale scelta manuale resta
+  //   locale al dispositivo e non deve propagarsi (né essere salvata) su KV.
+  const DEVICE_LOCAL = new Set([META, 'typo_prefs_v1', 'typo_prefs_v2', 'theme']);
 
   let ready = false;          // true dopo il primo pull: evita push prematuri (race)
   let serverEnabled = true;   // false se il KV non è configurato (501)
@@ -65,7 +67,10 @@
       if (j && j.updatedAt && j.data && j.updatedAt > localMeta) {
         applySnapshot(j.data);
         origSet(META, String(j.updatedAt));
-        location.reload();   // riparte con i dati sincronizzati
+        // Nasconde il contenuto prima del reload: l'utente non vede il
+        // doppio render (pagina locale -> ricarica coi dati sincronizzati).
+        try { document.documentElement.classList.add('booting'); } catch (e) {}
+        location.reload();
         return;
       }
       ready = true;

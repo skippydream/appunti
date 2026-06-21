@@ -4693,24 +4693,46 @@ ightarrow$ mitocondrio</strong>. La fotorespirazione dissipa energia (consuma AT
         updateSessionsUI();
         renderActivityGrid();
 
+        // ── TEMA ──────────────────────────────────────────────────────
+        // Il tema iniziale è già stato applizato sul <html> dal boot script
+        // (segue le impostazioni di sistema, o la scelta manuale salvata in
+        // locale). Qui gestiamo solo il pulsante e l'ascolto del sistema.
+        // Nota: la chiave 'theme' è esclusa dalla sincronizzazione KV
+        // (vedi DEVICE_LOCAL in sync.js): resta una preferenza del dispositivo.
         const themeBtn = document.getElementById('themeBtn');
-        themeBtn.addEventListener('click', () => {
-            const currentTheme = document.body.getAttribute('data-theme');
-            if (currentTheme === 'light') {
-                document.body.removeAttribute('data-theme');
-                localStorage.setItem('theme', 'dark');
+
+        function applyTheme(light) {
+            if (light) {
+                document.documentElement.setAttribute('data-theme', 'light');
             } else {
-                document.body.setAttribute('data-theme', 'light');
-                localStorage.setItem('theme', 'light');
+                document.documentElement.removeAttribute('data-theme');
             }
-            if (window.MathJax) {
+            if (window.MathJax && MathJax.typesetPromise) {
                 MathJax.typesetPromise();
             }
-        });
+        }
 
-        const savedTheme = localStorage.getItem('theme');
-        if (savedTheme === 'light') {
-            document.body.setAttribute('data-theme', 'light');
+        if (themeBtn) {
+            themeBtn.addEventListener('click', () => {
+                const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+                const nextLight = !isLight;
+                applyTheme(nextLight);
+                try { localStorage.setItem('theme', nextLight ? 'light' : 'dark'); } catch (e) {}
+            });
+        }
+
+        // Segue i cambi di tema di sistema, ma solo finché l'utente non ha
+        // espresso una scelta manuale (che ha la precedenza, in locale).
+        if (window.matchMedia) {
+            const darkMq = window.matchMedia('(prefers-color-scheme: dark)');
+            const onSystemThemeChange = (e) => {
+                let saved = null;
+                try { saved = localStorage.getItem('theme'); } catch (_) {}
+                if (saved) return;            // override manuale: il sistema non vince
+                applyTheme(!e.matches);
+            };
+            if (darkMq.addEventListener) darkMq.addEventListener('change', onSystemThemeChange);
+            else if (darkMq.addListener) darkMq.addListener(onSystemThemeChange);
         }
 
         const quizBtn = document.getElementById('quizBtn');
@@ -6195,3 +6217,7 @@ document.addEventListener('click', (e) => {
 
     })();
     // ===== END EXPORT / IMPORT BACKUP SYSTEM =====
+
+    // Boot: l'inizializzazione sincrona è completa. Sblocca il gate di avvio
+    // (il rivelamento effettivo avviene quando anche sync e MathJax sono pronti).
+    try { if (window.__boot) window.__boot.domReady(); } catch (e) {}
