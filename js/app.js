@@ -3794,69 +3794,6 @@ ightarrow$ mitocondrio</strong>. La fotorespirazione dissipa energia (consuma AT
             ]
 }
         
-        const quizDatabase = [
-            {
-                q: "Qual è la differenza fondamentale tra la tossicità di Helleborus foetidus e Ranunculus acris nel fieno essiccato per il bestiame?",
-                a: "Gli alcaloidi irritanti del <strong>Ranunculus acris</strong> (ranuncolina/protoanemonina) sono labili e vengono completamente degradati e resi innocui dal processo di essiccazione fienaria. Al contrario, i glicosidi cardioattivi steroidei di <strong>Helleborus foetidus</strong> (elleborina) sono estremamente stabili sia al calore che all'ossidazione, mantenendo intatta la loro letalità mortale anche nel fieno secco."
-            },
-            {
-                q: "Cos'è la Banda di Caspary nell'endoderma radicale e che funzione assolve?",
-                a: "È una modificazione della parete cellulare delle cellule dell'<strong>endoderma</strong> radicale (monostrato corticale interno), impregnata radialmente e trasversalmente di suberina e lignina. Interrompe la via di <strong>flusso apoplastico</strong> passivo (attraverso le pareti), costringendo le soluzioni ad attraversare la membrana plasmatica ed entrare nella via selettiva del <strong>simplasto</strong>, agendo da filtro fisiologico protettivo prima dell'ingresso nei vasi conduttori dello xilema."
-            },
-            {
-                q: "Spiega il fenomeno della serotinia riscontrato in molti pini mediterranei (es. Pinus halepensis).",
-                a: "La <strong>serotinia</strong> è un adattamento evolutivo al fuoco. Le squame delle pigne mature rimangono sigillate ermeticamente da una resina dura, trattenendo i semi vivi per anni sulla chioma. Il calore estremo di un incendio boschivo scioglie la resina e costringe le squame ad aprirsi rapidamente dopo il passaggio delle fiamme, rilasciando i semi su un letto di cenere ricco di minerali, umido, privo di competitori vegetali e di erbivori."
-            },
-            {
-                q: "Come agisce a livello cellulare la ricina contenuta nei semi di Ricinus communis?",
-                a: "La ricina è una glicoproteina composta da due catene peptidiche unite da un ponte disolfuro: la <strong>catena B</strong> si lega ai galattosidi di superficie facilitando l'ingresso per endocitosi; la <strong>catena A</strong>, una volta libera nel citosol, agisce come enzima ribonucleasi che rimuove specificamente un'adenina dall'RNA ribosomiale 28S della subunità 60S del ribosoma eucariotico, arrestando irreversibilmente la sintesi proteica e causando necrosi cellulare."
-            },
-            {
-                q: "Spiega la differenza biologica e nutrizionale tra l'endosperma primario (Gimnosperme) e l'endosperma secondario (Angiosperme).",
-                a: "Nelle <strong>Gimnosperme</strong>, l'endosperma primario è un tessuto <strong>aploide (1n)</strong> che si forma <i>prima</i> della fecondazione ad opera delle mitosi della macrospora, fungendo da gametofito femminile. Nelle <strong>Angiosperme</strong>, l'endosperma secondario o triploide <strong>(3n)</strong> si forma solo <i>a seguito</i> della <strong>doppia fecondazione</strong>, quando il secondo nucleo spermatico si fonde con i due nuclei polari del sacco embrionale. Questa seconda strategia evita lo spreco metabolico di sintetizzare riserve nutritive per ovuli che non verranno fecondati."
-            },
-            {
-                q: "Descrivi il processo di coevoluzione mutualistica tra Ficus carica e Blastophaga psenes.",
-                a: "L'infiorescenza del fico (siconio) racchiude centinaia di fiori unisessuali. L'impollinatore <strong>Blastophaga psenes</strong> entra nel siconio per ovodeporre. Nei fiori femminili <strong>brevistili</strong> (del caprifico), lo stilo è corto e l'ovopositore dell'insetto raggiunge l'ovario deponendo l'uovo (il fiore si trasforma in galla per la larva). Nei fiori femminili <strong>longistili</strong> (del fico domestico), lo stilo è troppo lungo e l'ovopositore non raggiunge l'ovario; l'insetto camminando sui fiori deposita passivamente il polline, impollinando il fiore che produrrà il seme senza ospitare larve. Questa divisione protegge la specie del fico garantendo il ciclo vitale della vespa."
-            },
-            {
-                q: "Cos'è il fenomeno dell'allelopatia e descrivi l'azione biochimica dello juglone prodotto da Juglans regia.",
-                a: "L'<strong>allelopatia</strong> è la secrezione di composti chimici (allelochimici) da parte di una pianta nell'ambiente circostante per inibire la germinazione e crescita delle specie competitori adiacenti. Il noce (<strong>Juglans regia</strong>) secerne l'idrojuglone (innocuo) dalle radici e lo accumula nelle foglie; una volta rilasciato al suolo o dilavato dalla pioggia, viene ossidato dai batteri e trasformato in <strong>juglone attivo</strong>, un potente chinone che inibisce la respirazione cellulare aerobia mitocondriale e la fotosintesi delle erbe del sottochioma."
-            },
-            {
-                q: "Quali sono le principali differenze biologiche e strutturali tra il legno omoxilo e il legno eteroxilo?",
-                a: "Il <strong>legno omoxilo</strong> (caratteristico delle Gimnosperme) è omogeneo e costituito quasi esclusivamente da <strong>tracheidi</strong> fusiformi, vasi stretti e chiusi dotati di punteggiature areolate, che svolgono la doppia funzione di conduzione idrica e sostegno. Il <strong>legno eteroxilo</strong> (caratteristico delle Angiosperme) presenta una spiccata divisione del lavoro: la conduzione rapida dell'acqua è affidata alle <strong>trachee</strong> (larghi tubi continui con pareti trasversali perforate o assenti), mentre il sostegno meccanico rigido è svolto specificamente da <strong>fibre sclerenchimatiche</strong> morte a parete spessissima."
-            },
-            {
-                q: "Traccia la complessa storia evolutiva di ibridazione e poliploidizzazione che ha portato alla nascita dei frumenti coltivati (genere Triticum).",
-                a: "La storia del frumento inizia 12.000 anni fa con specie selvatiche diploidi (2n=14, genoma AA) come <strong>Triticum monococcum var. boeoticum</strong>, domesticato in <strong>farro monococco</strong>. L'ibridazione spontanea tra una specie diploide affine (genoma BB, probabilmente <i>Aegilops speltoides</i>) e il farro selvatico ha generato il farro selvatico tetraploide <strong>Triticum dicoccoides</strong> (4n=28, genoma AABB), domesticato in <strong>farro dicocco (T. dicoccum)</strong> e da cui deriva il <strong>grano duro (Triticum durum)</strong>. Infine, circa 9.000 anni fa, un'ulteriore ibridazione spontanea nei campi coltivati tra il farro coltivato tetraploide (AABB) e la gramigna selvatica diploide <strong>Aegilops tauschii</strong> (2n=14, genoma DD) ha generato il <strong>grano tenero esaploide (Triticum aestivum)</strong> (6n=42, genoma AABBDD), le cui tre coppie di genomi diversi cooperano per conferire l'eccezionale plasticità e panificabilità (grazie al glutine dello strato aleuronico) odierne."
-            },
-            {
-                q: "Quali sono i meccanismi biofisici e ionici alla base dell'apertura e chiusura degli stomi fogliari?",
-                a: "L'apertura stomatica è avviata dalla luce blu che attiva le <strong>pompe protoniche H+-ATPasi</strong> sulla membrana plasmatica delle cellule di guardia. L'espulsione attiva di protoni crea un forte gradiente elettrochimico e iperpolarizza la membrana, inducendo l'apertura di canali per l'influsso passivo di <strong>ioni Potassio (K+)</strong> e il cotrasporto di <strong>ioni Cloro (Cl-)</strong>, accumulando anche acido malico nel vacuolo. L'aumentata concentrazione osmotica interna richiama acqua per osmosi: le cellule di guardia si gonfiano e, grazie all'orientamento radiale delle microfibrille di cellulosa della parete e all'ispessimento asimmetrico (parete interna più spessa e rigida), si incurvano allargando la rima stomatica. La chiusura è indotta dal deficit idrico tramite il rilascio di <strong>acido abscissico (ABA)</strong>, che inattiva le pompe protoniche, apre i canali anionici di efflusso depolarizzando la membrana, bloccando l'influsso di K+ e forzandone la fuoriuscita passiva; l'acqua esce per osmosi e le cellule tornano flaccide, sigillando la rima."
-            },
-            {
-                q: "Quali sono le quattro differenze macroscopiche e microscopiche che distinguono strutturalmente le Monocotiledoni dalle Dicotiledoni?",
-                a: "Le quattro differenze fondamentali sono: 1) <strong>Embrione:</strong> provvisto di un solo cotiledone nelle Monocotiledoni rispetto ai due cotiledoni simmetrici delle Dicotiledoni. 2) <strong>Polline:</strong> originariamente monosolcato (monocolpato, con una singola apertura) nelle Monocotiledoni, mentre è tricolpato (tre solchi o pori di germinazione) nelle Dicotiledoni evolute (Eudicotiledoni). 3) <strong>Anatomia del fusto:</strong> presenta una <strong>atassostele</strong> nelle Monocotiledoni (fasci cribrovascolari chiusi sparsi in disordine nel parenchima, privi di cambio e accrescimento secondario classico), contro la <strong>eustele</strong> delle Dicotiledoni (fasci aperti disposti in anello ordinato concentrico, provvisti di cambio intrafacciale per la crescita secondaria). 4) <strong>Morfologia fogliare:</strong> foglie parallelinervie ad attacco guainante nelle Monocotiledoni, rispetto alle foglie retinervie picciolate delle Dicotiledoni."
-            },
-            {
-                q: "Spiega la particolarità del fiore dell'Eucalyptus e il significato ecologico del suo portamento fogliare verticale.",
-                a: "Il genere <strong>Eucalyptus</strong> (il cui nome significa 'ben coperto') possiede un fiore caratterizzato da una corolla gamopetala fusa in una struttura a cappellino o <strong>opercolo (cuffia)</strong>. Durante la maturazione, l'espansione e l'allungamento dei numerosissimi filamenti staminali spinge l'opercolo fino a farlo distaccare completamente, lasciando liberi gli stami vessillari colorati che attirano gli impollinatori. Il portamento fogliare verticale (foglie adulte falcate appese verso il basso) è un adattamento xerofilo eccezionale: riduce l'insolazione diretta durante le ore centrali calde del giorno per limitare la traspirazione, pur consentendo alla luce solare radente del mattino e del tardo pomeriggio di svolgere la fotosintesi."
-            },
-            {
-                q: "Spiega in dettaglio com'è strutturato l'enzima Rubisco e in che modo la sua sintesi rappresenta una prova molecolare della teoria endosimbiontica.",
-                a: "L'enzima <strong>Rubisco</strong> (Ribulosio-1,5-bifosfato carbossilasi/ossigenasi) è un complesso proteico formato da 16 subunità: <strong>8 subunità grandi (L)</strong>, contenenti il sito catalitico, codificate dal <strong>DNA plastidiale</strong> e sintetizzate sui ribosomi 70S del cloroplasto; e <strong>8 subunità piccole (S)</strong>, con funzioni regolatrici, codificate dal <strong>DNA nucleare</strong>, sintetizzate sui ribosomi 80S citoplasmatici e importate nello stroma del cloroplasto. Questa cooperazione asimmetrica ed obbligatoria tra il genoma nucleare della cellula ospite eucariotica e il genoma dell'organello semiautonomo rappresenta una delle prove molecolari più solide e affascinanti della <strong>Teoria Endosimbiontica</strong> di Lynn Margulis, a testimonianza di una fusione funzionale definitiva tra il cianobatterio ancestrale fagocitato e la cellula ospite."
-            },
-            {
-                q: "Quali sono le tappe biochimiche della fotorespirazione e come si adattano le piante C4 e CAM per prevenire questo spreco metabolico?",
-                a: "La fotorespirazione si innesca quando la Rubisco fissa l'ossigeno molecolare ($O_2$), formando 3-fosfoglicerato e <strong>2-fosfoglicolato</strong> (tossico). Per recuperarlo, la pianta avvia un ciclo cooperativo tra tre organelli: nel <strong>cloroplasto</strong> il fosfoglicolato diventa glicolato ed è esportato nel <strong>perossisoma</strong> (ossidato a gliossilato, poi transaminato in <strong>glicina</strong>), la glicina passa nel <strong>mitocondrio</strong> dove due molecole formano una **serina** (con rilascio di $CO_2$ e $NH_4^+$), la serina ritorna nel perossisoma (diventa idrossipiruvato e poi glicerato) e infine nel cloroplasto, dove viene fosforilata in 3-fosfoglicerato spendendo ATP (recuperando il 75% del carbonio). Le <strong>piante C4</strong> evitano questo ciclo mediante <strong>separazione spaziale</strong>: fissano la $CO_2$ nel mesofillo tramite PEP-carbossilasi e trasportano il malato nella guaina del fascio (<strong>Anatomia Kranz</strong>), dove lo decarbossilano concentrando la $CO_2$ direttamente attorno alla Rubisco. Le <strong>piante CAM</strong> compiono una <strong>separazione temporale</strong>: aprono gli stomi di notte fissando la $CO_2$ in acido malico nel vacuolo, e lo decarbossilano di giorno a stomi chiusi per alimentare il Ciclo di Calvin senza traspirazione."
-            },
-            {
-                q: "Descrivi il ruolo dell'auxina e dell'etilene nello sviluppo dell'architettura vegetale e nell'abscissione fogliare.",
-                a: "L'<strong>auxina</strong> (IAA) prodotta dalla gemma apicale scende per trasporto polare lungo il fusto inibendo lo sviluppo delle gemme laterali sottostanti (<strong>dominanza apicale</strong>). Se la dominanza apicale viene meno per degenerazione o asportazione della gemma, lo sviluppo delle gemme laterali avvia una ramificazione <strong>simpodiale</strong> (in forma di <i>dicasio</i> con due gemme laterali simmetriche divergenti, o <i>monocasio</i>). Nel processo attivo di <strong>abscissione fogliare</strong> (apoptosi fogliare a fine stagione), il calo di auxina risalente e l'aumento di <strong>etilene</strong> gassoso stimolano le cellule della zona di abscissione (alla base del picciolo) a secernere enzimi idrolitici come **cellulasi e pectinasi**. Questi enzimi digeriscono la lamella mediana e la parete primaria cellulare, provocando il distacco della foglia. La cicatrice sul fusto viene immediatamente sigillata e cicatrizzata da uno strato protettivo di sughero suberificato."
-            }
-        ]
-;
         const cssTagMapping = JSON.parse(atob("eyJJbnRyb2R1emlvbmUiOiAiY2F0LWluZGlnbyIsICJGb3JtZSBkaSBhZ3JpY29sdHVyYSI6ICJjYXQtZW1lcmFsZCIsICJTdW9sbyI6ICJjYXQtc2xhdGUiLCAiQWdyb21ldGVvIjogImNhdC1hbWJlciIsICJMYXZvcmF6aW9uaSI6ICJjYXQtcm9zZSIsICJTaXN0ZW1hemlvbmkgaWRyYXVsaWNvIGFncmFyaWUiOiAiY2F0LXZpb2xldCIsICJEcmVuYWdnaW8iOiAiY2F0LW9yYW5nZSIsICJJZHJvbG9naWEiOiAiY2F0LWN5YW4iLCAiTWV0b2RpIGlycmlndWkiOiAiY2F0LXRlYWwiLCAiRmVydGlsaXp6YXppb25lIGUgY29uY2ltaSI6ICJjYXQtbGltZSIsICJGZXJ0aWxpenphbnRpIG5vbiBtaW5lcmFsaSBlIGdlc3Rpb25lIjogImNhdC1wdXJwbGUiLCAiQ29uc29jaWF6aW9uZSBhdnZpY2VuZGFtZW50byI6ICJjYXQtcm9zZSIsICJNYWxlcmJvbG9naWEiOiAiY2F0LXBpbmsiLCAiSW5mZXN0YW50aSBpbXBvcnRhbnRpIjogImNhdC1waW5rIn0="));
         const hexTagColors = JSON.parse(atob("eyJJbnRyb2R1emlvbmUiOiAiIzgxOGNmOCIsICJGb3JtZSBkaSBhZ3JpY29sdHVyYSI6ICIjMzRkMzk5IiwgIlN1b2xvIjogIiNhMWExYWEiLCAiQWdyb21ldGVvIjogIiNmYmJmMjQiLCAiTGF2b3JhemlvbmkiOiAiI2ZiNzE4NSIsICJTaXN0ZW1hemlvbmkgaWRyYXVsaWNvIGFncmFyaWUiOiAiI2E3OGJmYSIsICJEcmVuYWdnaW8iOiAiI2ZiOTIzYyIsICJJZHJvbG9naWEiOiAiIzIyZDNlZSIsICJNZXRvZGkgaXJyaWd1aSI6ICIjMmRkNGJmIiwgIkZlcnRpbGl6emF6aW9uZSBlIGNvbmNpbWkiOiAiI2EzZTYzNSIsICJGZXJ0aWxpenphbnRpIG5vbiBtaW5lcmFsaSBlIGdlc3Rpb25lIjogIiNjMDg0ZmMiLCAiQ29uc29jaWF6aW9uZSBhdnZpY2VuZGFtZW50byI6ICIjZmI3MTg1IiwgIk1hbGVyYm9sb2dpYSI6ICIjZjQ3MmI2IiwgIkluZmVzdGFudGkgaW1wb3J0YW50aSI6ICIjZjQ3MmI2In0="));
         const categoryEmojis = {"Introduzione": "\ud83c\udf0d", "Forme di agricoltura": "\ud83c\udf31", "Suolo": "\u26f0\ufe0f", "Agrometeo": "\u2600\ufe0f", "Lavorazioni": "\ud83d\ude9c", "Sistemazioni idraulico agrarie": "\ud83d\udcd0", "Drenaggio": "\ud83c\udf2a\ufe0f", "Idrologia": "\ud83c\udf0a", "Metodi irrigui": "\ud83d\udebf", "Fertilizzazione e concimi": "\ud83e\uddea", "Fertilizzanti non minerali e gestione": "\u267b\ufe0f", "Consociazione avvicendamento": "\ud83c\udf40", "Malerbologia": "\ud83c\udf3f", "Infestanti importanti": "\ud83c\udf3e"};
@@ -4781,11 +4718,6 @@ ightarrow$ mitocondrio</strong>. La fotorespirazione dissipa energia (consuma AT
         let bioRecallMode = false;
         let activeBioTopic = "origine_vita";
         let activeBotDivision = "all";
-        let activeQuizSubject = null;
-        let activeQuizList = [];
-        let activeQuizIndex = 0;
-        let quizScoreRight = 0;
-        let quizScoreTotal = 0;
 
 
         // ==========================================================================
@@ -5104,111 +5036,6 @@ ightarrow$ mitocondrio</strong>. La fotorespirazione dissipa energia (consuma AT
 
 
 
-        // ==========================================================================
-        // 🧠 QUIZ UNIVERSALE ENGINE
-        // ==========================================================================
-        function startUniversalQuiz(subject) {
-            activeQuizSubject = subject;
-            activeQuizIndex = 0;
-            quizScoreRight = 0;
-            quizScoreTotal = 0;
-            
-            if (subject === "agronomia") {
-                activeQuizList = cardsData.map(card => {
-                    return {
-                        q: `[Agronomia - ${card.categoria}] Spiega l'argomento: ${card.titolo}`,
-                        a: card.descrizione_raw
-                    };
-                });
-            } else if (subject === "biologia") {
-                activeQuizList = [];
-                Object.keys(cellLabData).forEach(key => {
-                    const topic = cellLabData[key];
-                    const parser = new DOMParser();
-                    const doc = parser.parseFromString(topic.content, 'text/html');
-                    const blocks = doc.querySelectorAll('.recall-block');
-                    blocks.forEach(block => {
-                        const header = block.querySelector('.recall-header');
-                        const hidden = block.querySelector('.recall-hidden');
-                        if (header && hidden) {
-                            activeQuizList.push({
-                                q: `[🧬 Biologia - ${topic.title}] ${header.textContent}`,
-                                a: hidden.innerHTML
-                            });
-                        }
-                    });
-                });
-            } else if (subject === "botanica") {
-                activeQuizList = quizDatabase.map(item => {
-                    return { q: `[🌿 Botanica] ${item.q}`, a: item.a };
-                });
-            }
-            
-            activeQuizList.sort(() => Math.random() - 0.5);
-            document.getElementById("activeQuizPanel").style.display = "flex";
-            loadUniversalQuizCard();
-            playAudioTone(1200, 'sine', 0.1);
-        }
-
-        function loadUniversalQuizCard() {
-            if (activeQuizList.length === 0) {
-                document.getElementById("universalQuizQuestion").textContent = "Nessuna domanda disponibile.";
-                return;
-            }
-            
-            const card = activeQuizList[activeQuizIndex];
-            document.getElementById("universalQuizQuestion").textContent = card.q;
-            document.getElementById("universalQuizAnswerText").innerHTML = card.a;
-            
-            document.getElementById("universalQuizAnswer").style.display = "none";
-            document.getElementById("quizInitialActions").style.display = "flex";
-            document.getElementById("quizEvaluationActions").style.display = "none";
-            
-            document.getElementById("quizProgressLabel").textContent = `Domanda ${activeQuizIndex + 1}/${activeQuizList.length}`;
-            
-            const subjBadges = {
-                agronomia: "🚜 Agronomia",
-                biologia: "🧬 Biologia",
-                botanica: "🌿 Botanica"
-            };
-            document.getElementById("quizSubjectLabel").textContent = subjBadges[activeQuizSubject];
-        }
-
-        function revealUniversalQuizAnswer() {
-            document.getElementById("universalQuizAnswer").style.display = "block";
-            document.getElementById("quizInitialActions").style.display = "none";
-            document.getElementById("quizEvaluationActions").style.display = "flex";
-            playAudioTone(850, 'sawtooth', 0.08);
-        }
-
-        function submitQuizEvaluation(evalValue) {
-            if (evalValue === "good") {
-                quizScoreRight++;
-                playAudioTone(1100, 'sine', 0.1);
-            } else {
-                playAudioTone(600, 'triangle', 0.1);
-            }
-            quizScoreTotal++;
-            
-            activeQuizIndex++;
-            if (activeQuizIndex < activeQuizList.length && activeQuizIndex < 10) {
-                loadUniversalQuizCard();
-            } else {
-                document.getElementById("universalQuizQuestion").innerHTML = `
-                    🏆 Round Completato!<br>
-                    Materia: <strong style="color:var(--accent);">${activeQuizSubject.toUpperCase()}</strong><br><br>
-                    Hai indovinato <strong style="font-size: 2.5rem; color: var(--status-done);">${quizScoreRight}/${quizScoreTotal}</strong> risposte!
-                `;
-                document.getElementById("universalQuizAnswer").style.display = "none";
-                document.getElementById("quizInitialActions").style.display = "flex";
-                document.getElementById("quizEvaluationActions").style.display = "none";
-                document.getElementById("quizInitialActions").innerHTML = `
-                    <button class="header-btn" onclick="startUniversalQuiz('${activeQuizSubject}')" style="padding: 1rem 2rem; background: var(--accent); color: #fff;">🔄 Ripeti Round</button>
-                    <button class="header-btn" onclick="switchSubject('quiz-view')" style="padding: 1rem 2rem;">🚪 Torna all'Indice</button>
-                `;
-                logStudySession();
-            }
-        }
 
         function logStudySession() {
             try {
