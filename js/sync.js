@@ -18,8 +18,8 @@
 
   const API = '/api/state';
   const META = '__sync_meta_v1';
-  const LEAD_MS = 1500;             // ritardo di un salvataggio "fresco"
-  const MIN_GAP_MS = 12000;         // distanza minima tra due scritture su KV
+  const LEAD_MS = 1200;             // ritardo di un salvataggio "fresco"
+  const MIN_GAP_MS = 4000;          // distanza minima tra due scritture su KV
   const READY_FALLBACK_MS = 6000;
 
   // Non sincronizzate su KV (preferenze del dispositivo).
@@ -183,6 +183,12 @@
     origSet(k, v);
     if (DEVICE_LOCAL.has(k)) return;
     if (PASSIVE.has(k)) { softDirty = true; return; }   // niente scrittura dedicata
+    dirty = true;
+    // Feedback IMMEDIATO: il FAB compare appena marchi, anche se la scrittura
+    // vera è leggermente posticipata (throttling). Se non c'è server, il dato è
+    // comunque salvato qui in locale.
+    if (serverEnabled) fab('saving', 'Salvataggio automatico…');
+    else fab('saved', 'Salvato in locale');
     schedulePush();
   };
 
