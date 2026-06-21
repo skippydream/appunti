@@ -3077,3 +3077,115 @@
 
         /* Tabelle/immagini eventuali */
         table { max-width: 100%; }
+
+        /* ============================================================
+           RIPETIZIONE SPAZIATA (SRS) — pulsante, badge e modale ripasso
+           ============================================================ */
+        .srs-btn { display: inline-flex; align-items: center; gap: 0.5em; }
+        .srs-badge {
+            display: inline-flex; align-items: center; justify-content: center;
+            min-width: 1.5em; height: 1.5em; padding: 0 0.45em;
+            border-radius: var(--radius-pill);
+            background: var(--accent); color: #04201c;
+            font-size: 0.78em; font-weight: 800; line-height: 1;
+        }
+        .srs-badge.srs-badge-zero { background: var(--border-strong); color: var(--text-secondary); }
+
+        .srs-overlay {
+            position: fixed; inset: 0; z-index: 100000;
+            display: none; align-items: center; justify-content: center;
+            padding: 1.5rem;
+            background: rgba(3, 4, 6, 0.78);
+            backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+        }
+        [data-theme="light"] .srs-overlay { background: rgba(15, 23, 42, 0.45); }
+        .srs-overlay.is-open { display: flex; }
+
+        .srs-modal {
+            position: relative;
+            width: 100%; max-width: 680px;
+            max-height: 88vh; overflow-y: auto;
+            background: var(--bg-secondary);
+            border: 1.5px solid var(--border-elegant);
+            border-radius: var(--radius-lg);
+            box-shadow: 0 30px 80px rgba(0,0,0,0.55);
+            padding: 1.6rem 1.6rem 1.8rem;
+        }
+        .srs-close {
+            position: absolute; top: 0.8rem; right: 1rem;
+            background: none; border: none; cursor: pointer;
+            font-size: 1.8rem; line-height: 1; color: var(--text-secondary);
+        }
+        .srs-close:hover { color: var(--text-primary); }
+
+        .srs-progress {
+            height: 6px; border-radius: var(--radius-pill);
+            background: var(--border-elegant); overflow: hidden; margin: 0.4rem 2rem 0.9rem 0;
+        }
+        .srs-progress-bar {
+            height: 100%; width: 0%;
+            background: var(--accent); border-radius: var(--radius-pill);
+            transition: width 0.3s ease;
+        }
+        .srs-counter {
+            text-align: center; font-size: 0.8rem; font-weight: 700;
+            color: var(--text-secondary); margin-bottom: 1rem; min-height: 1em;
+        }
+
+        .srs-card { text-align: center; }
+        .srs-cat {
+            display: inline-block; font-size: 0.72rem; font-weight: 800;
+            text-transform: uppercase; letter-spacing: 0.06em;
+            color: var(--accent); margin-bottom: 0.6rem;
+        }
+        .srs-question {
+            font-family: var(--font-ui); font-size: 1.5rem; font-weight: 800;
+            color: var(--text-primary); line-height: 1.25; margin-bottom: 0.4rem;
+        }
+        .srs-answer {
+            text-align: left; margin-top: 1.2rem; padding-top: 1.2rem;
+            border-top: 1px solid var(--border-elegant);
+            font-size: 1rem; line-height: 1.65; color: var(--text-primary);
+        }
+        .srs-answer mjx-container { max-width: 100%; overflow-x: auto; overflow-y: hidden; }
+
+        .srs-actions { margin-top: 1.6rem; }
+        .srs-show-btn {
+            display: block; width: 100%; padding: 0.9rem;
+            background: var(--accent); color: #04201c;
+            border: none; border-radius: var(--radius-md);
+            font-family: var(--font-ui); font-size: 1rem; font-weight: 800; cursor: pointer;
+            transition: filter 0.2s ease;
+        }
+        .srs-show-btn:hover { filter: brightness(1.08); }
+
+        .srs-grades { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.6rem; }
+        .srs-grade {
+            display: flex; flex-direction: column; align-items: center; gap: 0.2rem;
+            padding: 0.7rem 0.3rem; cursor: pointer;
+            background: var(--bg-elevated);
+            border: 1.5px solid var(--border-elegant); border-radius: var(--radius-md);
+            color: var(--text-primary);
+            transition: transform 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+        }
+        .srs-grade:hover { transform: translateY(-2px); }
+        .srs-grade-label { font-family: var(--font-ui); font-weight: 800; font-size: 0.92rem; }
+        .srs-grade-iv { font-size: 0.72rem; font-weight: 700; color: var(--text-secondary); }
+        .srs-grade-again:hover { border-color: var(--status-review); background: color-mix(in srgb, var(--status-review) 12%, var(--bg-elevated)); }
+        .srs-grade-hard:hover  { border-color: var(--status-progress); background: color-mix(in srgb, var(--status-progress) 12%, var(--bg-elevated)); }
+        .srs-grade-good:hover  { border-color: var(--status-done); background: color-mix(in srgb, var(--status-done) 12%, var(--bg-elevated)); }
+        .srs-grade-easy:hover  { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 12%, var(--bg-elevated)); }
+        .srs-grade-again .srs-grade-label { color: var(--status-review); }
+        .srs-grade-easy  .srs-grade-label { color: var(--accent); }
+
+        .srs-empty { text-align: center; padding: 1.5rem 0.5rem; }
+        .srs-empty-emoji { font-size: 2.6rem; margin-bottom: 0.6rem; }
+        .srs-empty h3 { font-family: var(--font-ui); font-size: 1.3rem; color: var(--text-primary); margin-bottom: 0.5rem; }
+        .srs-empty p { color: var(--text-secondary); line-height: 1.6; max-width: 42ch; margin: 0 auto 1.2rem; }
+        .srs-empty .srs-show-btn { max-width: 220px; margin: 0 auto; }
+
+        @media (max-width: 560px) {
+            .srs-grades { grid-template-columns: repeat(2, 1fr); }
+            .srs-question { font-size: 1.25rem; }
+            .srs-modal { padding: 1.2rem 1rem 1.4rem; }
+        }

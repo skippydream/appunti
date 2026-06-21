@@ -5552,6 +5552,7 @@ ightarrow$ mitocondrio</strong>. La fotorespirazione dissipa energia (consuma AT
                     BACKUP_KEYS_EXACT.includes(key) ||
                     key.startsWith('biology_card_status_') ||
                     key.startsWith('taxonomy_card_status_') ||
+                    key.startsWith('srs_') ||
                     key === 'study_sessions'
                 ) {
                     keys.push(key);
