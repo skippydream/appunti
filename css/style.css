@@ -2948,6 +2948,7 @@
 
         /* FAB di salvataggio: flottante in basso a sinistra, always-on-top.
            Compare solo mentre un salvataggio è in corso, poi sparisce. */
+        /* FAB di salvataggio MANUALE: sempre visibile, in basso a sinistra. */
         .save-fab {
             position: fixed;
             left: 1rem;
@@ -2955,25 +2956,27 @@
             z-index: 100001;
             display: inline-flex;
             align-items: center;
-            gap: 0.55rem;
-            padding: 0.55rem 0.95rem;
+            gap: 0.5rem;
+            padding: 0.6rem 1rem;
             background: var(--bg-elevated);
             color: var(--text-primary);
             border: 1.5px solid var(--border-strong);
             border-radius: var(--radius-pill);
             box-shadow: 0 10px 28px rgba(0, 0, 0, 0.35);
             font-family: var(--font-ui);
-            font-size: 0.8rem;
+            font-size: 0.85rem;
             font-weight: 700;
             white-space: nowrap;
-            opacity: 0;
-            transform: translateY(12px);
-            pointer-events: none;
-            transition: opacity 0.25s ease, transform 0.25s ease;
+            cursor: pointer;
+            transition: border-color 0.2s ease, background 0.2s ease, color 0.2s ease, transform 0.15s ease;
         }
-        .save-fab.is-visible { opacity: 1; transform: none; }
+        .save-fab:hover { transform: translateY(-2px); border-color: var(--accent); }
+        .save-fab:disabled { cursor: default; transform: none; }
+        .save-fab svg { width: 16px; height: 16px; display: block; }
+        .save-fab-icon { display: inline-flex; color: var(--accent); }
         .save-fab-spinner {
-            width: 14px; height: 14px;
+            display: none;
+            width: 15px; height: 15px;
             border-radius: 50%;
             border: 2px solid var(--border-strong);
             border-top-color: var(--accent);
@@ -2981,11 +2984,28 @@
             flex-shrink: 0;
         }
         .save-fab-check { display: none; color: var(--status-done); font-weight: 900; }
-        .save-fab.is-saved .save-fab-spinner { display: none; }
+
+        /* modifiche non salvate: invita a salvare */
+        .save-fab.is-unsaved {
+            border-color: var(--accent);
+            background: color-mix(in srgb, var(--accent) 14%, var(--bg-elevated));
+        }
+        /* in salvataggio */
+        .save-fab.is-saving .save-fab-icon,
+        .save-fab.is-saving .save-fab-check { display: none; }
+        .save-fab.is-saving .save-fab-spinner { display: inline-block; }
+        /* salvato */
+        .save-fab.is-saved { border-color: var(--status-done); color: var(--status-done); }
+        .save-fab.is-saved .save-fab-icon { display: none; }
         .save-fab.is-saved .save-fab-check { display: inline; }
-        .save-fab.is-error .save-fab-spinner { border-top-color: var(--status-review); }
+        /* errore */
+        .save-fab.is-error { border-color: var(--status-review); color: var(--status-review); }
+        .save-fab.is-error .save-fab-icon { color: var(--status-review); }
+        /* server non configurato */
+        .save-fab.is-local { opacity: 0.7; }
+        .save-fab.is-local .save-fab-icon { color: var(--text-secondary); }
         @media (max-width: 560px) {
-            .save-fab { left: 0.7rem; bottom: 0.7rem; font-size: 0.74rem; padding: 0.5rem 0.8rem; }
+            .save-fab { left: 0.7rem; bottom: 0.7rem; font-size: 0.78rem; padding: 0.5rem 0.85rem; }
         }
 
         @keyframes syncPulse {

@@ -1,78 +1,26 @@
 /* ============================================================================
-   Salvataggio automatico del progresso sul server (Cloudflare Pages + KV).
+   Sincronizzazione MANUALE col server (Cloudflare Pages + KV).
 
-   Economia delle scritture (free tier KV ~1.000 write/giorno):
-   - Throttling: al massimo 1 invio ogni MIN_GAP_MS; una modifica isolata parte
-     dopo un breve LEAD_MS (reattivo) ma le raffiche si accorpano.
-   - Le chiavi "passive" (es. ultima card / posizione di scroll) NON fanno
-     partire un invio: restano in locale e viaggiano in coda al prossimo invio
-     vero o all'uscita (sendBeacon). Scrollare quindi non costa scritture.
-   - Niente perdita di dati: ritento su errore; flush all'uscita.
-
-   Indicatori:
-   - CHIP in header (#syncStatus): stato STABILE — Sincronizzato/Solo locale/Offline.
-   - FAB (#saveFab): flottante "always on top", compare SOLO durante un salvataggio.
+   - All'apertura: carica lo stato salvato su KV e lo applica (load()).
+   - Salvataggio: SOLO manuale, tramite il FAB "Salva" (saveNow()). Nessun
+     salvataggio automatico, nessun debounce, nessun beacon.
+   - Quando ci sono modifiche non ancora salvate, il FAB lo segnala e si avvisa
+     prima di chiudere la pagina.
    ========================================================================== */
 (function () {
   'use strict';
 
   const API = '/api/state';
-  const META = '__sync_meta_v1';
-  const LEAD_MS = 1200;             // ritardo di un salvataggio "fresco"
-  const MIN_GAP_MS = 4000;          // distanza minima tra due scritture su KV
-  const READY_FALLBACK_MS = 6000;
-
-  // Non sincronizzate su KV (preferenze/stato del dispositivo). Il prefisso
-  // 'bookmark_' copre la vecchia posizione di scroll (pixel) che dipende dal
-  // dispositivo e non deve sincronizzarsi né far scattare salvataggi.
-  const DEVICE_LOCAL = new Set([META, 'typo_prefs_v1', 'typo_prefs_v2', 'theme']);
+  const LAST_CARD = 'last_active_card_v1';
+  // Chiavi locali al dispositivo: non salvate su KV.
+  const DEVICE_LOCAL = new Set(['theme', 'typo_prefs_v1', 'typo_prefs_v2', '__sync_meta_v1']);
   function isDeviceLocal(k) { return DEVICE_LOCAL.has(k) || k.indexOf('bookmark_') === 0; }
-  // Sincronizzate ma SENZA far partire un invio dedicato (viaggiano in coda).
-  const PASSIVE = new Set(['last_active_card_v1']);
-
-  let ready = false;
-  let serverEnabled = true;
-  let dirty = false;          // modifiche di progresso da inviare (prioritarie)
-  let softDirty = false;      // solo chiavi passive cambiate (bassa priorità)
-  let pushing = false;
-  let pushTimer = null;
-  let lastPush = 0;
-  let localMeta = +(localStorage.getItem(META) || 0);
 
   const origSet = localStorage.setItem.bind(localStorage);
 
-  // ── CHIP (stato stabile) ─────────────────────────────────────────────
-  function setChip(state) {
-    const wrap = document.getElementById('syncStatus');
-    if (!wrap) return;
-    const lbl = document.getElementById('syncLabel');
-    const map = {
-      syncing: ['Sincronizzo…', 's-sync'],
-      ok:      ['Sincronizzato', 's-ok'],
-      offline: ['Offline (salvato qui)', 's-off'],
-      local:   ['Solo locale', 's-off'],
-    };
-    const [text, cls] = map[state] || map.ok;
-    if (lbl) lbl.textContent = text;
-    wrap.className = 'sync-status ' + cls;
-  }
-
-  // ── FAB (attività transitoria, always-on-top) ────────────────────────
-  let fabHideTimer = null;
-  function fab(mode, text) {
-    const el = document.getElementById('saveFab');
-    if (!el) return;
-    clearTimeout(fabHideTimer);
-    if (mode === 'hidden') { el.classList.remove('is-visible'); return; }
-    const txt = el.querySelector('.save-fab-text');
-    if (txt) txt.textContent = text || '';
-    el.classList.toggle('is-saved', mode === 'saved');
-    el.classList.toggle('is-error', mode === 'error');
-    el.classList.add('is-visible');
-    if (mode === 'saved' || mode === 'error') {
-      fabHideTimer = setTimeout(() => el.classList.remove('is-visible'), 1600);
-    }
-  }
+  let unsaved = false;
+  let saving = false;
+  let serverOk = true;     // false se il KV non è configurato (501)
 
   function snapshot() {
     const o = {};
@@ -85,57 +33,68 @@
   }
 
   function applySnapshot(data) {
-    Object.keys(data).forEach((k) => { if (!isDeviceLocal(k)) origSet(k, data[k]); });
+    let changed = false;
+    Object.keys(data).forEach((k) => {
+      if (isDeviceLocal(k)) return;
+      if (localStorage.getItem(k) !== data[k]) { origSet(k, data[k]); changed = true; }
+    });
+    return changed;
   }
 
-  function markReady() {
-    if (ready) return;
-    ready = true;
-    if (dirty && serverEnabled) schedulePush();
+  // ── FAB ───────────────────────────────────────────────────────────
+  function fab(state) {
+    const el = document.getElementById('saveFab');
+    if (!el) return;
+    el.classList.remove('is-saving', 'is-saved', 'is-error', 'is-unsaved', 'is-local');
+    const labels = {
+      idle:    'Salva',
+      unsaved: 'Salva',
+      saving:  'Salvataggio…',
+      saved:   'Salvato',
+      error:   'Riprova',
+      local:   'Solo locale',
+    };
+    const txt = el.querySelector('.save-fab-text');
+    if (txt) txt.textContent = labels[state] || 'Salva';
+    if (state !== 'idle') el.classList.add('is-' + state);
+    el.disabled = (state === 'saving' || state === 'local');
+    el.title = state === 'local'
+      ? 'Server non configurato: i progressi restano in questo browser.'
+      : (state === 'unsaved' ? 'Hai modifiche non salvate. Clicca per salvare su cloud.'
+                             : 'Salva i progressi su cloud');
   }
 
-  async function pull() {
-    setChip('syncing');
-    fab('saving', 'Sincronizzo…');
+  // ── Caricamento all'apertura ──────────────────────────────────────
+  async function load() {
+    fab('saving');
     try {
       const r = await fetch(API, { cache: 'no-store' });
-      if (r.status === 501) { serverEnabled = false; markReady(); setChip('local'); fab('hidden'); return; }
-      if (!r.ok) { markReady(); setChip('offline'); fab('hidden'); return; }
+      if (r.status === 501) { serverOk = false; fab('local'); return; }
+      if (!r.ok) { fab('idle'); return; }
       const j = await r.json();
-      if (j && j.updatedAt && j.data && j.updatedAt > localMeta && !dirty) {
-        applySnapshot(j.data);
-        origSet(META, String(j.updatedAt));
-        localMeta = j.updatedAt;
+      // Applica lo stato del server; se cambia qualcosa, ricarica così la UI
+      // riflette i dati caricati.
+      if (j && j.data && applySnapshot(j.data)) {
         try { document.documentElement.classList.add('booting'); } catch (e) {}
         location.reload();
         return;
       }
-      markReady();
-      // Carica i dati locali se differiscono dal server (server vuoto/indietro,
-      // o modifiche offline): il progresso già presente qui arriva sul server.
-      const localData = JSON.stringify(snapshot());
-      const serverData = (j && j.data) ? JSON.stringify(j.data) : null;
-      if (serverEnabled && localData !== '{}' && localData !== serverData) {
-        schedulePush();
-      } else {
-        setChip('ok');
-        fab('hidden');
-      }
+      fab('idle');
     } catch (e) {
-      markReady();
-      setChip('offline');
-      fab('hidden');
+      fab('idle');
     }
   }
 
-  async function push() {
-    if (!serverEnabled || pushing) return;
-    pushing = true;
-    lastPush = Date.now();
-    dirty = false; softDirty = false;     // catturiamo lo stato ORA
-    const updatedAt = lastPush;
-    const payload = JSON.stringify({ updatedAt, data: snapshot() });
-    fab('saving', 'Salvataggio automatico…');
+  // ── Salvataggio MANUALE ───────────────────────────────────────────
+  async function saveNow() {
+    if (saving || !serverOk) return;
+    saving = true;
+    // Salva anche "la card attuale" (posizione corrente).
+    if (typeof window.captureCurrentCard === 'function') {
+      try { window.captureCurrentCard(); } catch (e) {}
+    }
+    fab('saving');
+    const payload = JSON.stringify({ updatedAt: Date.now(), data: snapshot() });
     try {
       const r = await fetch(API, {
         method: 'PUT',
@@ -143,63 +102,38 @@
         body: payload,
       });
       if (r.ok) {
-        origSet(META, String(updatedAt));
-        localMeta = updatedAt;
-        setChip('ok');
-        if (!dirty) fab('saved', 'Salvato ✓');
+        unsaved = false;
+        fab('saved');
+        setTimeout(() => { if (!unsaved && !saving) fab('idle'); }, 2000);
       } else {
-        dirty = true;
-        setChip('offline');
-        fab('error', 'Salvataggio non riuscito');
+        fab('error');
       }
     } catch (e) {
-      dirty = true;
-      setChip('offline');
-      fab('error', 'Offline — riprovo');
+      fab('error');
     } finally {
-      pushing = false;
-      if (dirty && ready && serverEnabled) schedulePush();
+      saving = false;
     }
   }
+  window.saveProgressNow = saveNow;
 
-  // Programma un invio rispettando la distanza minima tra le scritture.
-  function schedulePush() {
-    dirty = true;
-    if (!serverEnabled || !ready || pushTimer || pushing) return;
-    const since = Date.now() - lastPush;
-    const wait = since >= MIN_GAP_MS ? LEAD_MS : (MIN_GAP_MS - since);
-    pushTimer = setTimeout(() => { pushTimer = null; push(); }, wait);
-  }
-
-  function flushBeacon() {
-    if (!serverEnabled || (!dirty && !softDirty) || !navigator.sendBeacon) return;
-    const updatedAt = Date.now();
-    const payload = JSON.stringify({ updatedAt, data: snapshot() });
-    try {
-      const ok = navigator.sendBeacon(API, new Blob([payload], { type: 'application/json' }));
-      if (ok) { origSet(META, String(updatedAt)); localMeta = updatedAt; dirty = false; softDirty = false; }
-    } catch (e) {}
-  }
-
-  // Intercetta ogni scrittura: progresso -> invio (throttled); passive -> in coda.
+  // ── Segnala "modifiche non salvate" (NESSUN salvataggio automatico) ──
   localStorage.setItem = function (k, v) {
     origSet(k, v);
-    if (isDeviceLocal(k)) return;
-    if (PASSIVE.has(k)) { softDirty = true; return; }   // niente scrittura dedicata
-    dirty = true;
-    // Feedback IMMEDIATO: il FAB compare appena marchi, anche se la scrittura
-    // vera è leggermente posticipata (throttling). Se non c'è server, il dato è
-    // comunque salvato qui in locale.
-    if (serverEnabled) fab('saving', 'Salvataggio automatico…');
-    else fab('saved', 'Salvato in locale');
-    schedulePush();
+    if (isDeviceLocal(k) || k === LAST_CARD) return;   // last card: gestita al salvataggio
+    if (!saving) { unsaved = true; fab('unsaved'); }
   };
 
-  window.addEventListener('visibilitychange', () => {
-    if (document.visibilityState === 'hidden') flushBeacon();
+  // Avvisa se si chiude con modifiche non salvate.
+  window.addEventListener('beforeunload', function (e) {
+    if (unsaved) { e.preventDefault(); e.returnValue = ''; return ''; }
   });
-  window.addEventListener('pagehide', flushBeacon);
 
-  window.addEventListener('load', pull);
-  setTimeout(markReady, READY_FALLBACK_MS);
+  function wire() {
+    const el = document.getElementById('saveFab');
+    if (el) el.addEventListener('click', saveNow);
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', wire);
+  else wire();
+
+  window.addEventListener('load', load);
 })();
