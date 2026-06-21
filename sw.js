@@ -8,7 +8,7 @@
    Gli asset versionati (?v=) cambiano URL a ogni deploy, quindi la cache si
    rinfresca da sola; la versione qui sotto va bumpata se cambia questo file.
    ========================================================================== */
-const VERSION = 'appunti-v1';
+const VERSION = 'appunti-v2';
 const CORE = [
   './', './index.html', './manifest.json',
   './icons/icon-192.png', './icons/icon-512.png',
