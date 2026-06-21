@@ -4032,89 +4032,12 @@ ightarrow$ mitocondrio</strong>. La fotorespirazione dissipa energia (consuma AT
             } catch(e) {}
         }
 
-        function updateTrackerStats() {
-            let total = cardsData.length;
-            let done = 0;
-            let progress = 0;
-            let review = 0;
-            let todo = 0;
-            let starred = 0;
-
-            cardsData.forEach(c => {
-                const status = studyStates[c.id] || 'todo';
-                if (status === 'done') done++;
-                else if (status === 'progress') progress++;
-                else if (status === 'review') review++;
-                else todo++;
-
-                if (starredCards[c.id]) starred++;
-            });
-
-            document.getElementById('lblDone').textContent = done;
-            document.getElementById('lblProgress').textContent = progress;
-            document.getElementById('lblReview').textContent = review;
-            document.getElementById('lblTodo').textContent = todo;
-
-            document.getElementById('countStarred').textContent = starred;
-            document.getElementById('countReview').textContent = review;
-            document.getElementById('countProgress').textContent = progress;
-            document.getElementById('countDone').textContent = done;
-
-            const pDone = (done / total) * 100;
-            const pProgress = (progress / total) * 100;
-            const pReview = (review / total) * 100;
-            const pTodo = (todo / total) * 100;
-
-            document.getElementById('barDone').style.width = `${pDone}%`;
-            document.getElementById('barProgress').style.width = `${pProgress}%`;
-            document.getElementById('barReview').style.width = `${pReview}%`;
-            document.getElementById('barTodo').style.width = `${pTodo}%`;
-        }
 
         const searchBar = document.getElementById('searchBar');
         const tagButtons = document.querySelectorAll('.tag-btn');
         const cardsGrid = document.getElementById('cardsGrid');
         const emptyState = document.getElementById('emptyState');
 
-        function updateFilters() {
-            let visibleCount = 0;
-            const cards = document.querySelectorAll('.card');
-            
-            cards.forEach(card => {
-                const cardId = card.getAttribute('data-id');
-                const cardCat = card.getAttribute('data-category');
-                const cardSearch = card.getAttribute('data-search');
-                const cardStatus = studyStates[cardId] || 'todo';
-                const isStarred = !!starredCards[cardId];
-                
-                const matchesCategory = currentFilter === 'all' || cardCat === currentFilter;
-                const matchesSearch = cardSearch.includes(searchQuery);
-                
-                let matchesStudyFilter = true;
-                if (currentStudyFilter === 'starred') matchesStudyFilter = isStarred;
-                else if (currentStudyFilter === 'review') matchesStudyFilter = (cardStatus === 'review');
-                else if (currentStudyFilter === 'progress') matchesStudyFilter = (cardStatus === 'progress');
-                else if (currentStudyFilter === 'done') matchesStudyFilter = (cardStatus === 'done');
-
-                if (matchesCategory && matchesSearch && matchesStudyFilter) {
-                    card.style.display = 'flex';
-                    if (studyMode === 'recall') {
-                        card.classList.add('active-recall-hidden');
-                    } else {
-                        card.classList.remove('active-recall-hidden');
-                    }
-                    visibleCount++;
-                } else {
-                    card.style.display = 'none';
-                }
-            });
-            
-            if (visibleCount === 0) {
-                emptyState.style.display = 'flex';
-            } else {
-                emptyState.style.display = 'none';
-            }
-        }
 
         searchBar.addEventListener('input', (e) => {
             searchQuery = e.target.value.toLowerCase().trim();
@@ -4131,65 +4054,6 @@ ightarrow$ mitocondrio</strong>. La fotorespirazione dissipa energia (consuma AT
             });
         });
 
-        // Dashboard Roadmap Renderer
-        function renderDashboardRoadmap() {
-            const container = document.getElementById('dashboardRoadmapGrid');
-            if (!container) return;
-            
-            container.innerHTML = '';
-            
-            // Group cards by category
-            const galaxies = {};
-            cardsData.forEach(card => {
-                if (!galaxies[card.categoria]) {
-                    galaxies[card.categoria] = [];
-                }
-                galaxies[card.categoria].push(card);
-            });
-            
-            cleanTopicOrder.forEach((catName, idx) => {
-                const cards = galaxies[catName];
-                if (!cards) return;
-                
-                let totalCount = cards.length;
-                let doneCount = 0;
-                cards.forEach(c => {
-                    const status = studyStates[c.id] || 'todo';
-                    if (status === 'done') doneCount++;
-                });
-                
-                const pct = Math.round((doneCount / totalCount) * 100);
-                const hexColor = hexTagColors[catName] || '#64748b';
-                const emoji = categoryEmojis[catName] || '🪐';
-                
-                const cardEl = document.createElement('div');
-                cardEl.style.setProperty('--theme-color', hexColor);
-                cardEl.style.setProperty('--theme-color-glow', `${hexColor}25`);
-                cardEl.style.setProperty('--theme-color-bg', `${hexColor}10`);
-                
-                cardEl.className = `roadmap-card ${currentFilter === catName ? 'active' : ''}`;
-                
-                const displayIndex = String(idx + 1).padStart(2, '0');
-                cardEl.innerHTML = `
-                    <div class="roadmap-header">
-                        <span class="roadmap-name" title="${catName}">
-                            <span style="font-size: 0.72rem; font-weight: 800; opacity: 0.4; letter-spacing: 0.05em; margin-right: 0.25rem;">#${displayIndex}</span>
-                            ${catName}
-                        </span>
-                        <span class="roadmap-pct">${doneCount}/${totalCount}</span>
-                    </div>
-                    <div class="roadmap-bar-bg">
-                        <div class="roadmap-bar-fill" style="width: ${pct}%"></div>
-                    </div>
-                `;
-                
-                cardEl.addEventListener('click', () => {
-                    selectCategoryFromRoadmap(catName);
-                });
-                
-                container.appendChild(cardEl);
-            });
-        }
 
         function selectCategoryFromRoadmap(catName) {
             // Toggle filter off if clicked twice
@@ -4984,42 +4848,6 @@ ightarrow$ mitocondrio</strong>. La fotorespirazione dissipa energia (consuma AT
         let quizScoreRight = 0;
         let quizScoreTotal = 0;
 
-        function switchSubject(subject) {
-            activeSubject = subject;
-            
-            // Switch tabs active style
-            document.querySelectorAll(".subj-tab").forEach(btn => {
-                btn.classList.toggle("active", btn.getAttribute("data-subject") === subject);
-            });
-            
-            // Switch view visibility
-            document.querySelectorAll(".subject-view").forEach(view => {
-                view.classList.toggle("active", view.id === `view-${subject}`);
-            });
-            
-            // Update Logo, Icon, and subtitle
-            const logoIcon = document.getElementById("logoIcon");
-            const logoText = document.getElementById("logoText");
-            
-            if (subject === "agronomia") {
-                logoText.textContent = "Agronomia";
-            } else if (subject === "biologia") {
-                logoText.textContent = "Biologia & Istologia";
-                renderBioSidebar();
-                renderBioContent();
-            } else if (subject === "botanica") {
-                logoText.textContent = "Botanica";
-                renderTaxonomyGrid();
-            } else if (subject === "quiz-view") {
-                logoText.textContent = "Quiz Universale";
-            }
-            
-            // Dynamic top-level dashboard updates!
-            updateTrackerStats();
-            renderDashboardRoadmap();
-            
-            playAudioTone(1000, 'sine', 0.08);
-        }
 
         // ==========================================================================
         // 🧬 BIOLOGIA & ISTOLOGIA CONTROLLER
@@ -5335,245 +5163,7 @@ ightarrow$ mitocondrio</strong>. La fotorespirazione dissipa energia (consuma AT
             playAudioTone(950, 'sine', 0.04);
         }
 
-        // ==========================================================================
-        // 🧠 DYNAMIC STATS & ROADMAP OVERRIDES
-        // ==========================================================================
-        function updateTrackerStats() {
-            let total = 0;
-            let done = 0;
-            let progress = 0;
-            let review = 0;
-            let todo = 0;
-            let starred = 0;
 
-            if (activeSubject === "agronomia") {
-                total = cardsData.length;
-                cardsData.forEach(c => {
-                    const status = studyStates[c.id] || 'todo';
-                    if (status === 'done') done++;
-                    else if (status === 'progress') progress++;
-                    else if (status === 'review') review++;
-                    else todo++;
-
-                    if (starredCards[c.id]) starred++;
-                });
-            } else if (activeSubject === "biologia") {
-                const keys = Object.keys(cellLabData);
-                total = keys.length;
-                keys.forEach(key => {
-                    const status = localStorage.getItem(`biology_card_status_${key}`) || 'todo';
-                    if (status === 'done') done++;
-                    else if (status === 'progress') progress++;
-                    else if (status === 'review') review++;
-                    else todo++;
-                });
-            } else if (activeSubject === "botanica") {
-                total = taxonomyData.length;
-                taxonomyData.forEach(phylum => {
-                    const phylumKey = phylum.phylum.replace(/\s+/g, '_');
-                    const status = localStorage.getItem(`taxonomy_card_status_${phylumKey}`) || 'todo';
-                    if (status === 'done') done++;
-                    else if (status === 'progress') progress++;
-                    else if (status === 'review') review++;
-                    else todo++;
-                });
-            } else {
-                return;
-            }
-
-            const lblDone = document.getElementById('lblDone');
-            const lblProgress = document.getElementById('lblProgress');
-            const lblReview = document.getElementById('lblReview');
-            const lblTodo = document.getElementById('lblTodo');
-
-            if (lblDone) lblDone.textContent = done;
-            if (lblProgress) lblProgress.textContent = progress;
-            if (lblReview) lblReview.textContent = review;
-            if (lblTodo) lblTodo.textContent = todo;
-
-            const countStarred = document.getElementById('countStarred');
-            const countReview = document.getElementById('countReview');
-            const countProgress = document.getElementById('countProgress');
-            const countDone = document.getElementById('countDone');
-
-            if (countStarred) countStarred.textContent = starred;
-            if (countReview) countReview.textContent = review;
-            if (countProgress) countProgress.textContent = progress;
-            if (countDone) countDone.textContent = done;
-
-            const pDone = total > 0 ? (done / total) * 100 : 0;
-            const pProgress = total > 0 ? (progress / total) * 100 : 0;
-            const pReview = total > 0 ? (review / total) * 100 : 0;
-            const pTodo = total > 0 ? (todo / total) * 100 : 0;
-
-            const barDone = document.getElementById('barDone');
-            const barProgress = document.getElementById('barProgress');
-            const barReview = document.getElementById('barReview');
-            const barTodo = document.getElementById('barTodo');
-
-            if (barDone) barDone.style.width = `${pDone}%`;
-            if (barProgress) barProgress.style.width = `${pProgress}%`;
-            if (barReview) barReview.style.width = `${pReview}%`;
-            if (barTodo) barTodo.style.width = `${pTodo}%`;
-        }
-
-        function renderDashboardRoadmap() {
-            const container = document.getElementById('dashboardRoadmapGrid');
-            if (!container) return;
-            
-            container.innerHTML = '';
-            
-            if (activeSubject === "agronomia") {
-                const galaxies = {};
-                cardsData.forEach(card => {
-                    if (!galaxies[card.categoria]) {
-                        galaxies[card.categoria] = [];
-                    }
-                    galaxies[card.categoria].push(card);
-                });
-                
-                cleanTopicOrder.forEach((catName, idx) => {
-                    const cards = galaxies[catName];
-                    if (!cards) return;
-                    
-                    let totalCount = cards.length;
-                    let doneCount = 0;
-                    cards.forEach(c => {
-                        const status = studyStates[c.id] || 'todo';
-                        if (status === 'done') doneCount++;
-                    });
-                    
-                    const pct = Math.round((doneCount / totalCount) * 100);
-                    const hexColor = hexTagColors[catName] || '#64748b';
-                    const emoji = categoryEmojis[catName] || '🪐';
-                    
-                    const cardEl = document.createElement('div');
-                    cardEl.style.setProperty('--theme-color', hexColor);
-                    cardEl.style.setProperty('--theme-color-glow', `${hexColor}25`);
-                    cardEl.style.setProperty('--theme-color-bg', `${hexColor}10`);
-                    cardEl.className = `roadmap-card ${currentFilter === catName ? 'active' : ''}`;
-                    
-                    const displayIndex = String(idx + 1).padStart(2, '0');
-                    cardEl.innerHTML = `
-                        <div class="roadmap-header">
-                            <span class="roadmap-name" title="${catName}">
-                                <span style="font-size: 0.72rem; font-weight: 800; opacity: 0.4; letter-spacing: 0.05em; margin-right: 0.25rem;">#${displayIndex}</span>
-                                ${catName}
-                            </span>
-                            <span class="roadmap-pct">${doneCount}/${totalCount}</span>
-                        </div>
-                        <div class="roadmap-bar-bg">
-                            <div class="roadmap-bar-fill" style="width: ${pct}%"></div>
-                        </div>
-                    `;
-                    
-                    cardEl.addEventListener('click', () => {
-                        selectCategoryFromRoadmap(catName);
-                    });
-                    
-                    container.appendChild(cardEl);
-                });
-            } else if (activeSubject === "biologia") {
-                const groups = {
-                    "biologia_generale": { title: "Biologia Generale", emoji: "🧬", color: "#8b5cf6" },
-                    "istologia_vegetale": { title: "Istologia Vegetale", emoji: "🔬", color: "#ec4899" },
-                    "anatomia_vegetale": { title: "Anatomia Vegetale", emoji: "🌿", color: "#10b981" },
-                    "fisiologia_vegetale": { title: "Fisiologia Vegetale", emoji: "☀", color: "#f59e0b" }
-                };
-                
-                Object.keys(groups).forEach((groupKey, idx) => {
-                    const group = groups[groupKey];
-                    const groupItems = Object.keys(cellLabData).filter(key => cellLabData[key].group === groupKey);
-                    if (groupItems.length === 0) return;
-                    
-                    let doneCount = 0;
-                    groupItems.forEach(key => {
-                        const status = localStorage.getItem(`biology_card_status_${key}`) || 'todo';
-                        if (status === 'done') doneCount++;
-                    });
-                    
-                    const pct = Math.round((doneCount / groupItems.length) * 100);
-                    const hexColor = group.color;
-                    
-                    const cardEl = document.createElement('div');
-                    cardEl.style.setProperty('--theme-color', hexColor);
-                    cardEl.style.setProperty('--theme-color-glow', `${hexColor}25`);
-                    cardEl.style.setProperty('--theme-color-bg', `${hexColor}10`);
-                    cardEl.className = "roadmap-card";
-                    
-                    const displayIndex = String(idx + 1).padStart(2, '0');
-                    cardEl.innerHTML = `
-                        <div class="roadmap-header">
-                            <span class="roadmap-name" title="${group.title}">
-                                <span style="font-size: 0.72rem; font-weight: 800; opacity: 0.4; letter-spacing: 0.05em; margin-right: 0.25rem;">#${displayIndex}</span>
-                                ${group.title}
-                            </span>
-                            <span class="roadmap-pct">${doneCount}/${groupItems.length}</span>
-                        </div>
-                        <div class="roadmap-bar-bg">
-                            <div class="roadmap-bar-fill" style="width: ${pct}%"></div>
-                        </div>
-                    `;
-                    
-                    cardEl.addEventListener('click', () => {
-                        const searchInput = document.getElementById("bioSearchBar");
-                        if (searchInput) {
-                            searchInput.value = group.title;
-                            filterBioContent();
-                        }
-                    });
-                    
-                    container.appendChild(cardEl);
-                });
-            } else if (activeSubject === "botanica") {
-                const divisions = {
-                    "Gimnosperme": { title: "Gimnosperme", emoji: "🌲", color: "#059669" },
-                    "Angiosperme": { title: "Angiosperme", emoji: "🌸", color: "#a855f7" }
-                };
-                
-                Object.keys(divisions).forEach((divKey, idx) => {
-                    const div = divisions[divKey];
-                    const divItems = taxonomyData.filter(phylum => phylum.divisione === divKey);
-                    if (divItems.length === 0) return;
-                    
-                    let doneCount = 0;
-                    divItems.forEach(phylum => {
-                        const phylumKey = phylum.phylum.replace(/\s+/g, '_');
-                        const status = localStorage.getItem(`taxonomy_card_status_${phylumKey}`) || 'todo';
-                        if (status === 'done') doneCount++;
-                    });
-                    
-                    const pct = Math.round((doneCount / divItems.length) * 100);
-                    const hexColor = div.color;
-                    
-                    const cardEl = document.createElement('div');
-                    cardEl.style.setProperty('--theme-color', hexColor);
-                    cardEl.style.setProperty('--theme-color-glow', `${hexColor}25`);
-                    cardEl.style.setProperty('--theme-color-bg', `${hexColor}10`);
-                    cardEl.className = "roadmap-card";
-                    
-                    const displayIndex = String(idx + 1).padStart(2, '0');
-                    cardEl.innerHTML = `
-                        <div class="roadmap-header">
-                            <span class="roadmap-name" title="${div.title}">
-                                <span style="font-size: 0.72rem; font-weight: 800; opacity: 0.4; letter-spacing: 0.05em; margin-right: 0.25rem;">#${displayIndex}</span>
-                                ${div.title}
-                            </span>
-                            <span class="roadmap-pct">${doneCount}/${divItems.length}</span>
-                        </div>
-                        <div class="roadmap-bar-bg">
-                            <div class="roadmap-bar-fill" style="width: ${pct}%"></div>
-                        </div>
-                    `;
-                    
-                    cardEl.addEventListener('click', () => {
-                        filterBotDivision(divKey);
-                    });
-                    
-                    container.appendChild(cardEl);
-                });
-            }
-        }
 
         // ==========================================================================
         // 🧠 QUIZ UNIVERSALE ENGINE
@@ -5753,6 +5343,21 @@ ightarrow$ mitocondrio</strong>. La fotorespirazione dissipa energia (consuma AT
             });
         }
 
+        // ── MathJax lazy ──────────────────────────────────────────────
+        // Le formule stanno solo nei .card-body. Al boot tipizziamo solo il
+        // soggetto visibile (agronomia); gli altri al primo switch, quando le
+        // loro schede sono visibili (layout corretto). Una volta per soggetto.
+        const _typesetDone = new Set();
+        function typesetSubject(subject) {
+            if (_typesetDone.has(subject)) return Promise.resolve();
+            _typesetDone.add(subject);
+            if (!(window.MathJax && MathJax.typesetPromise)) return Promise.resolve();
+            const cards = document.querySelectorAll('.card[data-subject="' + subject + '"]');
+            if (!cards.length) return Promise.resolve();
+            return MathJax.typesetPromise(Array.from(cards)).catch(function () {});
+        }
+        window.__typesetSubject = typesetSubject;
+
         function switchSubject(subject) {
             activeSubject = subject;
             document.querySelectorAll('.subj-tab').forEach(btn => {
@@ -5764,6 +5369,7 @@ ightarrow$ mitocondrio</strong>. La fotorespirazione dissipa energia (consuma AT
             currentFilter = 'all';
             rebuildCategoryTags(subject);
             updateFilters();
+            typesetSubject(subject);   // tipizza le formule del soggetto se non già fatto
             updateTrackerStats();
             renderDashboardRoadmap();
             playAudioTone(1000,'sine',0.08);

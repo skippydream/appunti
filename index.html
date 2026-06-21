@@ -38,18 +38,25 @@
                 processHtmlClass: 'tex2jax_process'
             },
             startup: {
-                // Quando il primo typeset è concluso, le formule sono già
-                // renderizzate: sblocca il gate di avvio (vedi boot script).
+                // Niente typeset automatico dell'intera pagina: al boot
+                // tipizziamo solo le schede del soggetto visibile (più veloce),
+                // gli altri soggetti al primo switch. Vedi typesetSubject() in app.js.
+                typeset: false,
                 pageReady: function () {
                     return MathJax.startup.defaultPageReady().then(function () {
-                        if (window.__boot) window.__boot.mathReady();
+                        var done = window.__typesetSubject
+                            ? window.__typesetSubject('agronomia')   // soggetto iniziale
+                            : MathJax.typesetPromise();               // fallback: tutto
+                        return Promise.resolve(done).then(function () {
+                            if (window.__boot) window.__boot.mathReady();
+                        });
                     });
                 }
             }
         };
     </script>
     <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
-    <link rel="stylesheet" href="./css/style.css?v=20260621-5">
+    <link rel="stylesheet" href="./css/style.css?v=20260621-7">
 
     <!-- ============================================================
          BOOT PRE-PAINT — tema, tipografia e gate di avvio.
@@ -8354,8 +8361,8 @@ regolazione ormonale: quando la foglia invecchia (senescenza), la sua produzione
     </script>
     <!-- Active JS Study Engine -->
     <!-- ?v= : cache-busting per garantire JS/CSS aggiornati dopo ogni deploy -->
-    <script src="./js/app.js?v=20260621-5"></script>
+    <script src="./js/app.js?v=20260621-7"></script>
     <!-- Persistenza automatica sul server (Cloudflare Pages Functions + KV) -->
-    <script src="./js/sync.js?v=20260621-5"></script>
+    <script src="./js/sync.js?v=20260621-7"></script>
 </body>
 </html>
