@@ -30,20 +30,32 @@
 
   const origSet = localStorage.setItem.bind(localStorage);
 
+  let savedTimer = null;
   function setStatus(state) {
     const wrap = document.getElementById('syncStatus');
     if (!wrap) return;
     const lbl = document.getElementById('syncLabel');
     const map = {
       syncing: ['Sincronizzo…', 's-sync'],
+      saving:  ['Salvataggio automatico…', 's-saving'],
+      saved:   ['Salvato ✓', 's-ok'],
       ok:      ['Sincronizzato', 's-ok'],
-      saving:  ['Salvataggio…', 's-saving'],
-      offline: ['Offline', 's-off'],
+      offline: ['Offline (salvato qui)', 's-off'],
       local:   ['Solo locale', 's-off'],
     };
     const [text, cls] = map[state] || map.ok;
     if (lbl) lbl.textContent = text;
     wrap.className = 'sync-status ' + cls;
+  }
+
+  // Mostra "Salvato ✓" un attimo, poi torna a "Sincronizzato".
+  function showSaved() {
+    setStatus('saved');
+    clearTimeout(savedTimer);
+    savedTimer = setTimeout(() => {
+      const lbl = document.getElementById('syncLabel');
+      if (lbl && lbl.textContent === 'Salvato ✓') setStatus('ok');
+    }, 1600);
   }
 
   function snapshot() {
@@ -123,7 +135,7 @@
       if (r.ok) {
         origSet(META, String(updatedAt));
         localMeta = updatedAt;
-        setStatus(dirty ? 'saving' : 'ok');
+        if (dirty) setStatus('saving'); else showSaved();
       } else {
         dirty = true;            // non confermato: riprova
         setStatus('offline');

@@ -2944,6 +2944,23 @@
         .sync-status.s-sync  .sync-dot { background: var(--accent); animation: syncPulse 1s infinite ease-in-out; }
         .sync-status.s-off   .sync-dot { background: var(--text-secondary); }
 
+        /* Progress circle: visibile mentre salva/sincronizza (al posto del dot) */
+        .sync-status .sync-spinner {
+            display: none;
+            width: 13px; height: 13px;
+            border-radius: 50%;
+            border: 2px solid var(--border-strong);
+            border-top-color: var(--accent);
+            animation: syncSpin 0.7s linear infinite;
+            flex-shrink: 0;
+        }
+        .sync-status.s-saving .sync-spinner,
+        .sync-status.s-sync   .sync-spinner { display: inline-block; }
+        .sync-status.s-saving .sync-dot,
+        .sync-status.s-sync   .sync-dot { display: none; }
+        .sync-status.s-saving .sync-spinner { border-top-color: var(--status-progress); }
+        @keyframes syncSpin { to { transform: rotate(360deg); } }
+
         @keyframes syncPulse {
             0%,100% { opacity: 1; transform: scale(1); }
             50%     { opacity: 0.35; transform: scale(0.8); }
@@ -3189,3 +3206,51 @@
             .srs-question { font-size: 1.25rem; }
             .srs-modal { padding: 1.2rem 1rem 1.4rem; }
         }
+
+        /* ============================================================
+           "Riprendi da dove eri" — banner sottile sotto la navbar materie
+           ============================================================ */
+        .resume-banner {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            margin-top: 0.9rem;
+            padding: 0.5rem 0.7rem 0.5rem 1rem;
+            border: 1.5px solid var(--accent);
+            background: var(--accent-light);
+            border-radius: var(--radius-md);
+            opacity: 0;
+            transform: translateY(-6px);
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+        .resume-banner.is-visible { opacity: 1; transform: none; }
+        .resume-go {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            gap: 0.55rem;
+            background: none;
+            border: none;
+            cursor: pointer;
+            text-align: left;
+            color: var(--text-primary);
+            font-family: var(--font-ui);
+            font-size: 0.92rem;
+            font-weight: 600;
+            padding: 0.25rem;
+        }
+        .resume-go:hover .resume-text strong { text-decoration: underline; }
+        .resume-icon { color: var(--accent); font-size: 1.15rem; font-weight: 800; line-height: 1; }
+        .resume-text { color: var(--text-secondary); }
+        .resume-text strong { color: var(--accent); }
+        .resume-dismiss {
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: var(--text-secondary);
+            font-size: 1.4rem;
+            line-height: 1;
+            padding: 0 0.35rem;
+            flex-shrink: 0;
+        }
+        .resume-dismiss:hover { color: var(--text-primary); }

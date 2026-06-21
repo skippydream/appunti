@@ -56,7 +56,7 @@
         };
     </script>
     <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
-    <link rel="stylesheet" href="./css/style.css?v=20260621-12">
+    <link rel="stylesheet" href="./css/style.css?v=20260621-14">
 
     <!-- ============================================================
          BOOT PRE-PAINT — tema, tipografia e gate di avvio.
@@ -159,8 +159,10 @@
                 <button class="header-btn" id="graphOpenBtn" title="Mappa concettuale">Mappa concetti</button>
                 <button class="header-btn" id="exportBtn" title="Scarica un backup dei progressi (file .json)">Backup</button>
                 <button class="header-btn" id="importBtn" title="Ripristina i progressi da un file di backup">Importa</button>
-                <span class="sync-status" id="syncStatus" title="Stato del salvataggio sul server. 'Solo locale' = i progressi restano in questo browser e non si sincronizzano.">
-                    <span class="sync-dot"></span><span id="syncLabel">Sincronizzo…</span>
+                <span class="sync-status" id="syncStatus" title="Salvataggio automatico: i progressi si salvano da soli. 'Solo locale' = restano in questo browser e non si sincronizzano.">
+                    <span class="sync-spinner" aria-hidden="true"></span>
+                    <span class="sync-dot" aria-hidden="true"></span>
+                    <span id="syncLabel" aria-live="polite">Sincronizzo…</span>
                 </span>
                 <input type="file" id="importFileInput" accept=".json" style="display: none;">
                 <button class="theme-toggle" id="themeBtn" title="Cambia tema" aria-label="Cambia tema chiaro/scuro">
@@ -8340,10 +8342,12 @@ regolazione ormonale: quando la foglia invecchia (senescenza), la sua produzione
     </script>
     <!-- Active JS Study Engine -->
     <!-- ?v= : cache-busting per garantire JS/CSS aggiornati dopo ogni deploy -->
-    <script src="./js/app.js?v=20260621-12"></script>
+    <script src="./js/app.js?v=20260621-14"></script>
     <!-- Persistenza automatica sul server (Cloudflare Pages Functions + KV) -->
-    <script src="./js/sync.js?v=20260621-12"></script>
+    <script src="./js/sync.js?v=20260621-14"></script>
     <!-- Ripetizione spaziata (SM-2) -->
-    <script src="./js/srs.js?v=20260621-12"></script>
+    <script src="./js/srs.js?v=20260621-14"></script>
+    <!-- "Riprendi da dove eri" -->
+    <script src="./js/resume.js?v=20260621-14"></script>
 </body>
 </html>
