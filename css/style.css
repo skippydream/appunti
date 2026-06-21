@@ -3060,6 +3060,17 @@
             overflow-y: hidden;
         }
 
+        /* Formule INLINE lunghe ($…$): inline-block così max-width fa effetto
+           (le inline sono display:inline e ignorerebbero il cap). Le corte
+           restano in linea col testo; solo quelle lunghe scrollano nel box. */
+        .card-body mjx-container:not([display="true"]) {
+            display: inline-block;
+            max-width: 100%;
+            overflow-x: auto;
+            overflow-y: hidden;
+            vertical-align: middle;
+        }
+
         /* Widget flottanti sempre dentro lo schermo */
         .pomodoro-card { max-width: calc(100vw - 1.2em); }
         .typo-panel-body { max-width: min(280px, 86vw); }
