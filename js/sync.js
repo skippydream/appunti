@@ -22,8 +22,11 @@
   const MIN_GAP_MS = 4000;          // distanza minima tra due scritture su KV
   const READY_FALLBACK_MS = 6000;
 
-  // Non sincronizzate su KV (preferenze del dispositivo).
+  // Non sincronizzate su KV (preferenze/stato del dispositivo). Il prefisso
+  // 'bookmark_' copre la vecchia posizione di scroll (pixel) che dipende dal
+  // dispositivo e non deve sincronizzarsi né far scattare salvataggi.
   const DEVICE_LOCAL = new Set([META, 'typo_prefs_v1', 'typo_prefs_v2', 'theme']);
+  function isDeviceLocal(k) { return DEVICE_LOCAL.has(k) || k.indexOf('bookmark_') === 0; }
   // Sincronizzate ma SENZA far partire un invio dedicato (viaggiano in coda).
   const PASSIVE = new Set(['last_active_card_v1']);
 
@@ -75,14 +78,14 @@
     const o = {};
     for (let i = 0; i < localStorage.length; i++) {
       const k = localStorage.key(i);
-      if (DEVICE_LOCAL.has(k)) continue;
+      if (isDeviceLocal(k)) continue;
       o[k] = localStorage.getItem(k);
     }
     return o;
   }
 
   function applySnapshot(data) {
-    Object.keys(data).forEach((k) => { if (!DEVICE_LOCAL.has(k)) origSet(k, data[k]); });
+    Object.keys(data).forEach((k) => { if (!isDeviceLocal(k)) origSet(k, data[k]); });
   }
 
   function markReady() {
@@ -181,7 +184,7 @@
   // Intercetta ogni scrittura: progresso -> invio (throttled); passive -> in coda.
   localStorage.setItem = function (k, v) {
     origSet(k, v);
-    if (DEVICE_LOCAL.has(k)) return;
+    if (isDeviceLocal(k)) return;
     if (PASSIVE.has(k)) { softDirty = true; return; }   // niente scrittura dedicata
     dirty = true;
     // Feedback IMMEDIATO: il FAB compare appena marchi, anche se la scrittura

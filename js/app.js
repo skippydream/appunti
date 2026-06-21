@@ -5441,62 +5441,9 @@ ightarrow$ mitocondrio</strong>. La fotorespirazione dissipa energia (consuma AT
 
         let currentSpeech = null;
 
-const BOOKMARK_KEY = `bookmark_${location.pathname}`;
-
-function saveScrollBookmark() {
-    const scrollY = window.scrollY || document.documentElement.scrollTop;
-
-    localStorage.setItem(
-        BOOKMARK_KEY,
-        JSON.stringify({
-            y: scrollY,
-            time: Date.now()
-        })
-    );
-}
-
-function restoreScrollBookmark() {
-    const data = localStorage.getItem(BOOKMARK_KEY);
-    if (!data) return;
-
-    try {
-        const parsed = JSON.parse(data);
-
-        window.scrollTo({
-            top: parsed.y,
-            behavior: 'smooth'
-        });
-
-        playUiSound('open');
-
-    } catch (e) {
-        console.error('Bookmark restore failed', e);
-    }
-}
-
-let scrollTimeout;
-
-window.addEventListener('scroll', () => {
-    clearTimeout(scrollTimeout);
-
-    scrollTimeout = setTimeout(() => {
-        saveScrollBookmark();
-    }, 200);
-});
-
-const scrollBookmarkBtn = document.getElementById('scrollBookmarkBtn');
-
-if (scrollBookmarkBtn) {
-    scrollBookmarkBtn.addEventListener('click', () => {
-        restoreScrollBookmark();
-
-        scrollBookmarkBtn.textContent = '📍 Ripreso';
-
-        setTimeout(() => {
-            scrollBookmarkBtn.textContent = '📖 Segnalibro';
-        }, 1200);
-    });
-}
+// (Rimosso il vecchio "segnalibro di scroll": salvava bookmark_<path> a ogni
+//  scroll — facendo scattare un salvataggio per ogni scroll — e non aveva nemmeno
+//  un pulsante di ripristino. Sostituito dal banner "Riprendi da dove eri".)
 
 function speakText(text) {
     if (!text) return;
