@@ -2944,22 +2944,49 @@
         .sync-status.s-sync  .sync-dot { background: var(--accent); animation: syncPulse 1s infinite ease-in-out; }
         .sync-status.s-off   .sync-dot { background: var(--text-secondary); }
 
-        /* Progress circle: visibile mentre salva/sincronizza (al posto del dot) */
-        .sync-status .sync-spinner {
-            display: none;
-            width: 13px; height: 13px;
+        @keyframes syncSpin { to { transform: rotate(360deg); } }
+
+        /* FAB di salvataggio: flottante in basso a sinistra, always-on-top.
+           Compare solo mentre un salvataggio è in corso, poi sparisce. */
+        .save-fab {
+            position: fixed;
+            left: 1rem;
+            bottom: 1rem;
+            z-index: 100001;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.55rem;
+            padding: 0.55rem 0.95rem;
+            background: var(--bg-elevated);
+            color: var(--text-primary);
+            border: 1.5px solid var(--border-strong);
+            border-radius: var(--radius-pill);
+            box-shadow: 0 10px 28px rgba(0, 0, 0, 0.35);
+            font-family: var(--font-ui);
+            font-size: 0.8rem;
+            font-weight: 700;
+            white-space: nowrap;
+            opacity: 0;
+            transform: translateY(12px);
+            pointer-events: none;
+            transition: opacity 0.25s ease, transform 0.25s ease;
+        }
+        .save-fab.is-visible { opacity: 1; transform: none; }
+        .save-fab-spinner {
+            width: 14px; height: 14px;
             border-radius: 50%;
             border: 2px solid var(--border-strong);
             border-top-color: var(--accent);
             animation: syncSpin 0.7s linear infinite;
             flex-shrink: 0;
         }
-        .sync-status.s-saving .sync-spinner,
-        .sync-status.s-sync   .sync-spinner { display: inline-block; }
-        .sync-status.s-saving .sync-dot,
-        .sync-status.s-sync   .sync-dot { display: none; }
-        .sync-status.s-saving .sync-spinner { border-top-color: var(--status-progress); }
-        @keyframes syncSpin { to { transform: rotate(360deg); } }
+        .save-fab-check { display: none; color: var(--status-done); font-weight: 900; }
+        .save-fab.is-saved .save-fab-spinner { display: none; }
+        .save-fab.is-saved .save-fab-check { display: inline; }
+        .save-fab.is-error .save-fab-spinner { border-top-color: var(--status-review); }
+        @media (max-width: 560px) {
+            .save-fab { left: 0.7rem; bottom: 0.7rem; font-size: 0.74rem; padding: 0.5rem 0.8rem; }
+        }
 
         @keyframes syncPulse {
             0%,100% { opacity: 1; transform: scale(1); }
@@ -3215,6 +3242,7 @@
             align-items: center;
             gap: 0.6rem;
             margin-top: 0.9rem;
+            margin-bottom: 1.2rem;
             padding: 0.5rem 0.7rem 0.5rem 1rem;
             border: 1.5px solid var(--accent);
             background: var(--accent-light);

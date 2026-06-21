@@ -56,7 +56,7 @@
         };
     </script>
     <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
-    <link rel="stylesheet" href="./css/style.css?v=20260621-14">
+    <link rel="stylesheet" href="./css/style.css?v=20260621-15">
 
     <!-- ============================================================
          BOOT PRE-PAINT — tema, tipografia e gate di avvio.
@@ -148,6 +148,12 @@
 <body>
     <!-- Loader del gate di avvio: visibile solo mentre html.booting è attivo -->
     <div id="bootLoader" aria-hidden="true"><div class="boot-spinner"></div></div>
+    <!-- FAB salvataggio: flottante, compare solo durante un salvataggio -->
+    <div class="save-fab" id="saveFab" role="status" aria-live="polite">
+        <span class="save-fab-spinner" aria-hidden="true"></span>
+        <span class="save-fab-check" aria-hidden="true">✓</span>
+        <span class="save-fab-text">Salvataggio automatico…</span>
+    </div>
     <div class="container">
         <!-- Header -->
         <header>
@@ -160,7 +166,6 @@
                 <button class="header-btn" id="exportBtn" title="Scarica un backup dei progressi (file .json)">Backup</button>
                 <button class="header-btn" id="importBtn" title="Ripristina i progressi da un file di backup">Importa</button>
                 <span class="sync-status" id="syncStatus" title="Salvataggio automatico: i progressi si salvano da soli. 'Solo locale' = restano in questo browser e non si sincronizzano.">
-                    <span class="sync-spinner" aria-hidden="true"></span>
                     <span class="sync-dot" aria-hidden="true"></span>
                     <span id="syncLabel" aria-live="polite">Sincronizzo…</span>
                 </span>
@@ -8342,12 +8347,12 @@ regolazione ormonale: quando la foglia invecchia (senescenza), la sua produzione
     </script>
     <!-- Active JS Study Engine -->
     <!-- ?v= : cache-busting per garantire JS/CSS aggiornati dopo ogni deploy -->
-    <script src="./js/app.js?v=20260621-14"></script>
+    <script src="./js/app.js?v=20260621-15"></script>
     <!-- Persistenza automatica sul server (Cloudflare Pages Functions + KV) -->
-    <script src="./js/sync.js?v=20260621-14"></script>
+    <script src="./js/sync.js?v=20260621-15"></script>
     <!-- Ripetizione spaziata (SM-2) -->
-    <script src="./js/srs.js?v=20260621-14"></script>
+    <script src="./js/srs.js?v=20260621-15"></script>
     <!-- "Riprendi da dove eri" -->
-    <script src="./js/resume.js?v=20260621-14"></script>
+    <script src="./js/resume.js?v=20260621-15"></script>
 </body>
 </html>

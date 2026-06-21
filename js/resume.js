@@ -16,9 +16,15 @@
       document.querySelector('.card[data-id="' + (window.CSS && CSS.escape ? CSS.escape(id) : id) + '"]');
   }
 
-  // Registra la scheda attiva (chiamabile anche da srs.js durante il ripasso).
+  // Logica semplice e intuitiva: l'"ultima scheda" è quella che stavi guardando,
+  // cioè la scheda visibile più in alto nella finestra. Si aggiorna mentre scorri
+  // (a scorrimento fermo). La scrittura è SOLO locale: la chiave è "passiva" lato
+  // sync (vedi PASSIVE in sync.js), quindi scorrere non consuma scritture su KV;
+  // il valore viaggia in coda al prossimo salvataggio o alla chiusura.
+  let lastRecordedId = null;
   function record(id, subject) {
-    if (!id) return;
+    if (!id || id === lastRecordedId) return;
+    lastRecordedId = id;
     try {
       localStorage.setItem(KEY, JSON.stringify({
         id: id, subject: subject || 'agronomia', ts: Date.now()
@@ -27,14 +33,30 @@
   }
   window.recordActiveCard = record;
 
-  // Ogni interazione col tracker = "sto lavorando su questa scheda".
-  document.addEventListener('click', function (e) {
-    const btn = e.target.closest('.tracker-btn');
-    if (!btn) return;
-    const card = btn.closest('.card');
-    if (!card) return;
-    record(card.getAttribute('data-id'), card.getAttribute('data-subject') || 'agronomia');
-  });
+  // Trova la scheda visibile più vicina al bordo superiore (sotto l'header).
+  function topVisibleCard() {
+    const anchor = 150;     // px sotto il bordo alto della finestra
+    let best = null, bestDist = Infinity;
+    const cards = document.querySelectorAll('.card');
+    for (let i = 0; i < cards.length; i++) {
+      const c = cards[i];
+      if (c.style.display === 'none') continue;
+      const r = c.getBoundingClientRect();
+      if (r.height === 0 || r.bottom < 0 || r.top > window.innerHeight) continue;
+      const dist = Math.abs(r.top - anchor);
+      if (dist < bestDist) { bestDist = dist; best = c; }
+    }
+    return best;
+  }
+
+  let scrollTimer = null;
+  window.addEventListener('scroll', function () {
+    clearTimeout(scrollTimer);
+    scrollTimer = setTimeout(function () {
+      const c = topVisibleCard();
+      if (c) record(c.getAttribute('data-id'), c.getAttribute('data-subject') || 'agronomia');
+    }, 600);
+  }, { passive: true });
 
   // Porta l'utente alla scheda: cambia materia se serve, scorre e la evidenzia.
   function goToCard(last) {
@@ -92,9 +114,10 @@
   }
 
   function init() {
-    try { if (sessionStorage.getItem(DISMISS)) return; } catch (e) {}
     let last;
     try { last = JSON.parse(localStorage.getItem(KEY) || 'null'); } catch (e) {}
+    if (last && last.id) lastRecordedId = last.id;   // evita riscritture identiche allo scroll
+    try { if (sessionStorage.getItem(DISMISS)) return; } catch (e) {}
     if (!last || !last.id) return;
     const card = cardById(last.id);
     if (!card) return;                       // scheda non presente: niente banner

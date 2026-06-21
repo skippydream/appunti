@@ -291,11 +291,6 @@
     save();
     reviewedCount++;
     syncTrackerStatus(id, quality, entry);
-    // "Riprendi da dove eri": l'ultima scheda ripassata è dove sei rimasto.
-    if (typeof window.recordActiveCard === 'function') {
-      const info = cardInfo(id);
-      window.recordActiveCard(id, info ? info.subject : 'agronomia');
-    }
     // "Di nuovo": la scheda torna in coda più avanti nella stessa sessione
     if (quality < 3 && queue.length > 1) queue.push(id);
     next();
