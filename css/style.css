@@ -1122,7 +1122,8 @@
             color: var(--cat, var(--accent));
         }
 
-        /* Barra-accento di sezione sul bordo sinistro della card */
+        /* Barra-accento di sezione sul bordo sinistro della card rimossa */
+        /*
         .card::before {
             content: '';
             position: absolute;
@@ -1132,6 +1133,7 @@
             border-radius: var(--radius-lg) 0 0 var(--radius-lg);
             opacity: 0.9;
         }
+        */
 
         @keyframes cardPulse {
             0% { box-shadow: 0 0 0 0px var(--accent-glow); transform: scale(1); }
@@ -2230,10 +2232,12 @@
             background: rgba(16, 185, 129, 0.14);
             border: 1px solid rgba(16, 185, 129, 0.35);
         }
-        /* Sottile barra di accento a sinistra per distinguere le nuove schede */
+        /* Sottile barra di accento a sinistra per distinguere le nuove schede rimossa */
+        /*
         .card[data-src="pdf"] {
             border-left: 3px solid rgba(16, 185, 129, 0.45);
         }
+        */
 
         /* Formule MathJax larghe (es. Penman-Monteith): scroll orizzontale invece di rompere il layout */
         .card-body mjx-container[display="true"] {
