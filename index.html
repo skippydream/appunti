@@ -56,7 +56,7 @@
         };
     </script>
     <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
-    <link rel="stylesheet" href="./css/style.css?v=20260621-19">
+    <link rel="stylesheet" href="./css/style.css?v=20260621-22">
 
     <!-- ============================================================
          BOOT PRE-PAINT — tema, tipografia e gate di avvio.
@@ -8073,21 +8073,29 @@ regolazione ormonale: quando la foglia invecchia (senescenza), la sua produzione
     </div>
 
     <!-- Self-Test Modal -->
-    <!-- Full-Screen Interactive Cosmic Constellation Map Overlay -->
-    <div class="cosmic-overlay" id="cosmicOverlay">
-        <div class="cosmic-header">
-            <div class="cosmic-header-title">
-                <h3><span>🪐</span> Mappa delle Costellazioni</h3>
-                <p>Naviga visivamente i macro e micro argomenti di Agronomia. Controlla il progresso di ogni costellazione!</p>
+    <!-- Mappa concetti: overlay panoramico degli argomenti e del progresso -->
+    <div class="cmap-overlay" id="cmapOverlay" role="dialog" aria-modal="true" aria-label="Mappa concetti">
+        <div class="cmap-panel">
+            <div class="cmap-header">
+                <div class="cmap-titles">
+                    <h2>Mappa concetti</h2>
+                    <p>Tutti gli argomenti e il tuo progresso. Clicca un concetto per saltarci.</p>
+                </div>
+                <button class="cmap-close" id="cmapClose" type="button" aria-label="Chiudi">&times;</button>
             </div>
-            <div class="cosmic-search-wrapper">
-                <input type="text" class="cosmic-search-bar" id="cosmicSearch" placeholder="Cerca concetto nella costellazione...">
+            <div class="cmap-toolbar">
+                <div class="cmap-subjects" id="cmapSubjects">
+                    <button class="cmap-subj active" type="button" data-subject="agronomia">Agronomia</button>
+                    <button class="cmap-subj" type="button" data-subject="biologia">Biologia</button>
+                    <button class="cmap-subj" type="button" data-subject="botanica">Botanica</button>
+                </div>
+                <div class="cmap-search-wrap">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                    <input type="text" class="cmap-search" id="cmapSearch" placeholder="Cerca un concetto…">
+                </div>
             </div>
-            <button class="close-modal" id="cosmicCloseBtn" title="Torna agli appunti">&times;</button>
-        </div>
-        
-        <div class="cosmic-main-content" id="cosmicMainContent">
-            <!-- Galaxy Cards compiled dynamically by study states in Javascript -->
+            <div class="cmap-summary" id="cmapSummary"></div>
+            <div class="cmap-body" id="cmapBody"></div>
         </div>
     </div>
 
@@ -8343,12 +8351,12 @@ regolazione ormonale: quando la foglia invecchia (senescenza), la sua produzione
     </script>
     <!-- Active JS Study Engine -->
     <!-- ?v= : cache-busting per garantire JS/CSS aggiornati dopo ogni deploy -->
-    <script src="./js/app.js?v=20260621-19"></script>
+    <script src="./js/app.js?v=20260621-22"></script>
     <!-- Persistenza automatica sul server (Cloudflare Pages Functions + KV) -->
-    <script src="./js/sync.js?v=20260621-19"></script>
+    <script src="./js/sync.js?v=20260621-22"></script>
     <!-- Ripetizione spaziata (SM-2) -->
-    <script src="./js/srs.js?v=20260621-19"></script>
+    <script src="./js/srs.js?v=20260621-22"></script>
     <!-- "Riprendi da dove eri" -->
-    <script src="./js/resume.js?v=20260621-19"></script>
+    <script src="./js/resume.js?v=20260621-22"></script>
 </body>
 </html>

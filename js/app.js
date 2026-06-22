@@ -3807,7 +3807,6 @@ ightarrow$ mitocondrio</strong>. La fotorespirazione dissipa energia (consuma AT
         let searchQuery = '';
         let currentStudyFilter = 'all';
         let studyMode = 'standard';
-        let cosmicSearchQuery = '';
 
         function loadState() {
             const savedStates = localStorage.getItem('agronomia_study_states');
@@ -3843,8 +3842,9 @@ ightarrow$ mitocondrio</strong>. La fotorespirazione dissipa energia (consuma AT
             localStorage.setItem('agronomia_starred_cards', JSON.stringify(starredCards));
             updateTrackerStats();
             renderDashboardRoadmap();
-            if (document.getElementById('cosmicOverlay').style.display === 'flex') {
-                renderCosmicConstellations();
+            const cmap = document.getElementById('cmapOverlay');
+            if (cmap && cmap.classList.contains('is-open') && typeof renderConceptMap === 'function') {
+                renderConceptMap();
             }
         }
 
@@ -4543,173 +4543,168 @@ ightarrow$ mitocondrio</strong>. La fotorespirazione dissipa energia (consuma AT
         // Il "Quiz" casuale è stato sostituito dal Ripasso a ripetizione
         // spaziata (js/srs.js), che fa la stessa cosa ma in modo programmato.
 
-        // Dynamic Cosmic Constellations Map Hub Overlay
-        const cosmicOverlay = document.getElementById('cosmicOverlay');
+        // ===== MAPPA CONCETTI (overlay panoramico, uniforme col sito) =====
         const graphOpenBtn = document.getElementById('graphOpenBtn');
-        const cosmicCloseBtn = document.getElementById('cosmicCloseBtn');
-        const cosmicMainContent = document.getElementById('cosmicMainContent');
-        const cosmicSearch = document.getElementById('cosmicSearch');
+        const cmapOverlay  = document.getElementById('cmapOverlay');
+        const cmapBody     = document.getElementById('cmapBody');
+        const cmapSummary  = document.getElementById('cmapSummary');
+        const cmapSearch   = document.getElementById('cmapSearch');
+        const cmapClose    = document.getElementById('cmapClose');
+        const cmapSubjects = document.getElementById('cmapSubjects');
+        let cmapSubject = 'agronomia';
+        let cmapQuery = '';
 
-        function renderCosmicConstellations() {
-            cosmicMainContent.innerHTML = '';
-            
-            // Group cards by Category/Galaxy
-            const galaxies = {};
-            cardsData.forEach(card => {
-                if (!galaxies[card.categoria]) {
-                    galaxies[card.categoria] = [];
-                }
-                galaxies[card.categoria].push(card);
+        function cmapEsc(s) {
+            return String(s).replace(/[&<>"']/g, function (c) {
+                return { '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c];
             });
+        }
+        function cmapStatusClass(st) {
+            if (st === 'review') return 's-review';
+            if (st === 'progress') return 's-progress';
+            if (st === 'done') return 's-done';
+            return 's-todo';
+        }
 
-            let hasVisibleGalaxies = false;
+        function renderConceptMap() {
+            if (!cmapBody) return;
+            // Raccoglie le schede del soggetto dal DOM, raggruppate per categoria.
+            const cards = Array.prototype.slice.call(
+                document.querySelectorAll('.card[data-subject="' + cmapSubject + '"]'));
+            const groups = {};
+            const order = [];
+            cards.forEach(function (c) {
+                const cat = c.getAttribute('data-category') || 'Altro';
+                if (!groups[cat]) { groups[cat] = []; order.push(cat); }
+                const t = c.querySelector('.card-title');
+                groups[cat].push({ id: c.getAttribute('data-id'), title: t ? t.textContent.trim() : '(scheda)' });
+            });
+            // Ordine: per agronomia usa cleanTopicOrder, poi eventuali extra.
+            let cats = order;
+            if (cmapSubject === 'agronomia' && typeof cleanTopicOrder !== 'undefined') {
+                cats = cleanTopicOrder.filter(function (c) { return groups[c]; })
+                    .concat(order.filter(function (c) { return cleanTopicOrder.indexOf(c) < 0; }));
+            }
 
-            // Loop strictly according to our defined display order
-            cleanTopicOrder.forEach((catName, idx) => {
-                const cards = galaxies[catName];
-                if (!cards) return; 
+            // Riepilogo del soggetto.
+            let total = 0, done = 0;
+            cats.forEach(function (cat) {
+                groups[cat].forEach(function (x) { total++; if ((studyStates[x.id] || 'todo') === 'done') done++; });
+            });
+            const pct = total ? Math.round(done / total * 100) : 0;
+            if (cmapSummary) {
+                cmapSummary.innerHTML =
+                    '<span><strong>' + done + '</strong> / ' + total + ' concetti imparati</span>' +
+                    '<span class="cmap-summary-bar"><span style="width:' + pct + '%"></span></span>' +
+                    '<strong>' + pct + '%</strong>';
+            }
 
-                const hexColor = hexTagColors[catName] || '#64748b';
-                const emoji = categoryEmojis[catName] || '🪐';
-                
-                let totalCount = cards.length;
-                let doneCount = 0;
-                let cardsHTML = '';
+            cmapBody.innerHTML = '';
+            let anyVisible = false;
+            cats.forEach(function (cat) {
+                const items = groups[cat];
+                const filtered = cmapQuery
+                    ? items.filter(function (x) { return x.title.toLowerCase().indexOf(cmapQuery) >= 0; })
+                    : items;
+                if (!filtered.length) return;
+                anyVisible = true;
 
-                cards.forEach(card => {
-                    const status = studyStates[card.id] || 'todo';
-                    if (status === 'done') doneCount++;
+                let dCount = 0;
+                items.forEach(function (x) { if ((studyStates[x.id] || 'todo') === 'done') dCount++; });
+                const tpct = Math.round(dCount / items.length * 100);
+                const hex = (typeof hexTagColors !== 'undefined' && hexTagColors[cat]) || '#14b8a6';
 
-                    let dotClass = 's-todo';
-                    if (status === 'review') dotClass = 's-review';
-                    else if (status === 'progress') dotClass = 's-progress';
-                    else if (status === 'done') dotClass = 's-done';
+                const concepts = filtered.map(function (x) {
+                    const cls = cmapStatusClass(studyStates[x.id] || 'todo');
+                    return '<button class="cmap-concept" type="button" data-id="' + cmapEsc(x.id) + '">' +
+                        '<span class="status-dot ' + cls + '"></span>' +
+                        '<span class="cmap-concept-title">' + cmapEsc(x.title) + '</span></button>';
+                }).join('');
 
-                    const matchesSearch = !cosmicSearchQuery || 
-                        card.titolo.toLowerCase().includes(cosmicSearchQuery) || 
-                        card.descrizione_raw.toLowerCase().includes(cosmicSearchQuery);
+                const topic = document.createElement('div');
+                topic.className = 'cmap-topic' + (cmapQuery ? ' is-open' : '');
+                topic.style.setProperty('--cat', hex);
+                topic.innerHTML =
+                    '<button class="cmap-topic-head" type="button" aria-expanded="' + (cmapQuery ? 'true' : 'false') + '">' +
+                        '<span class="cmap-topic-dot"></span>' +
+                        '<span class="cmap-topic-name">' + cmapEsc(cat) + '</span>' +
+                        '<span class="cmap-topic-count">' + dCount + '/' + items.length + '</span>' +
+                        '<span class="cmap-topic-bar"><span style="width:' + tpct + '%"></span></span>' +
+                        '<span class="cmap-topic-chevron">&#9662;</span>' +
+                    '</button>' +
+                    '<div class="cmap-concepts">' + concepts + '</div>';
 
-                    if (matchesSearch) {
-                        cardsHTML += `
-                            <div class="constellation-node-pill" onclick="navigateToConcept('${card.id}')" title="Clicca per saltare direttamente a questo concetto">
-                                <span class="status-dot ${dotClass}"></span>
-                                #${card.id} - ${card.titolo}
-                            </div>
-                        `;
-                    }
+                topic.querySelector('.cmap-topic-head').addEventListener('click', function () {
+                    const open = topic.classList.toggle('is-open');
+                    this.setAttribute('aria-expanded', open ? 'true' : 'false');
                 });
-
-                if (cardsHTML) {
-                    hasVisibleGalaxies = true;
-                    const completionPct = Math.round((doneCount / totalCount) * 100);
-                    const strokeOffset = 100.5 - (completionPct * 100.5) / 100;
-                    const colorGlowClass = cssTagMapping[catName] || 'cat-slate';
-
-                    const galaxyCard = document.createElement('div');
-                    galaxyCard.className = `constellation-card ${colorGlowClass}-glow`;
-                    galaxyCard.style.setProperty('--category-glow', hexColor);
-                    galaxyCard.style.setProperty('--category-glow-alpha', `${hexColor}15`);
-
-                    const displayIndex = String(idx + 1).padStart(2, '0');
-                    galaxyCard.innerHTML = `
-                        <div class="constellation-header">
-                            <div class="planet-sphere" style="background: radial-gradient(circle at 30% 30%, var(--category-glow), #000000);">
-                                ${emoji}
-                            </div>
-                            <div class="planet-title-block">
-                                <h4>
-                                    <span style="font-size: 0.72rem; font-weight: 800; opacity: 0.45; letter-spacing: 0.08em; display: block; margin-bottom: 0.15rem; text-transform: uppercase;">Argomento #${displayIndex}</span>
-                                    ${catName}
-                                </h4>
-                                <div class="planet-stats">
-                                    <span>🪐 ${totalCount} Concetti</span>
-                                    <span>&bull;</span>
-                                    <span>${doneCount} / ${totalCount} Imparati</span>
-                                </div>
-                            </div>
-                            <div class="planet-progress-circle" title="Progresso completamento: ${completionPct}%">
-                                <svg class="progress-svg">
-                                    <circle class="progress-circle-bg" cx="21" cy="21" r="16"></circle>
-                                    <circle class="progress-circle-fill" cx="21" cy="21" r="16" style="stroke-dashoffset: ${strokeOffset};"></circle>
-                                </svg>
-                                <span class="progress-text-val">${completionPct}%</span>
-                            </div>
-                        </div>
-                        <div class="constellation-satellites-grid">
-                            ${cardsHTML}
-                        </div>
-                    `;
-                    cosmicMainContent.appendChild(galaxyCard);
-                }
+                topic.querySelectorAll('.cmap-concept').forEach(function (btn) {
+                    btn.addEventListener('click', function () { navigateToConcept(btn.getAttribute('data-id')); });
+                });
+                cmapBody.appendChild(topic);
             });
 
-            const emptyEl = document.createElement('div');
-            emptyEl.className = 'cosmic-empty';
-            emptyEl.id = 'cosmicEmptyState';
-            emptyEl.innerHTML = `
-                <span>🪐</span>
-                <h4>Nessun pianeta concettuale trovato</h4>
-                <p style="margin-top:0.4rem; font-size:0.9rem; opacity:0.8;">Prova ad utilizzare parole chiave differenti.</p>
-            `;
-            cosmicMainContent.appendChild(emptyEl);
-
-            if (!hasVisibleGalaxies) {
-                document.getElementById('cosmicEmptyState').style.display = 'flex';
-            } else {
-                document.getElementById('cosmicEmptyState').style.display = 'none';
+            if (!anyVisible) {
+                cmapBody.innerHTML = '<div class="cmap-empty"><h4>Nessun concetto trovato</h4><p>Prova con un\'altra parola chiave.</p></div>';
             }
         }
 
-        window.navigateToConcept = function(cardId) {
-            cosmicOverlay.style.display = 'none';
-            document.body.style.overflow = 'auto';
+        window.navigateToConcept = function (cardId) {
+            closeConceptMap();
+            const cardEl = document.getElementById('card_' + cardId);
+            if (!cardEl) return;
+            const subj = cardEl.getAttribute('data-subject') || 'agronomia';
+            // azzera i filtri rapidi per non nascondere la card
+            currentStudyFilter = 'all';
+            try { Object.values(quickFilters).forEach(function (f) { if (f) f.classList.remove('active'); }); } catch (e) {}
+            if (typeof switchSubject === 'function') switchSubject(subj);
             playAudioTone(523.25, 'sine', 0.1);
-
-            const cardEl = document.getElementById(`card_${cardId}`);
-            if (cardEl) {
-                searchBar.value = '';
-                searchQuery = '';
-                tagButtons.forEach(b => b.classList.remove('active'));
-                const allTagBtn = Array.from(tagButtons).find(btn => btn.getAttribute('data-category') === 'all');
-                if (allTagBtn) allTagBtn.classList.add('active');
-                currentFilter = 'all';
-                currentStudyFilter = 'all';
-                Object.values(quickFilters).forEach(f => f.classList.remove('active'));
-                
-                updateFilters();
-                renderDashboardRoadmap();
-
+            setTimeout(function () {
                 cardEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
                 cardEl.classList.remove('active-recall-hidden');
-
                 cardEl.classList.remove('card-pulse-active');
-                void cardEl.offsetWidth; 
+                void cardEl.offsetWidth;
                 cardEl.classList.add('card-pulse-active');
-
-                setTimeout(() => {
-                    cardEl.classList.remove('card-pulse-active');
-                }, 3000);
-            }
+                setTimeout(function () { cardEl.classList.remove('card-pulse-active'); }, 3000);
+            }, 90);
         };
 
-        graphOpenBtn.addEventListener('click', () => {
-            cosmicOverlay.style.display = 'flex';
-            document.body.style.overflow = 'hidden';
-            cosmicSearch.value = '';
-            cosmicSearchQuery = '';
-            renderCosmicConstellations();
-            playAudioTone(880, 'sine', 0.15);
-        });
+        function openConceptMap() {
+            if (!cmapOverlay) return;
+            cmapQuery = '';
+            if (cmapSearch) cmapSearch.value = '';
+            cmapSubject = (typeof activeSubject !== 'undefined' && activeSubject) ? activeSubject : 'agronomia';
+            if (['agronomia', 'biologia', 'botanica'].indexOf(cmapSubject) < 0) cmapSubject = 'agronomia';
+            if (cmapSubjects) cmapSubjects.querySelectorAll('.cmap-subj').forEach(function (b) {
+                b.classList.toggle('active', b.getAttribute('data-subject') === cmapSubject);
+            });
+            renderConceptMap();
+            cmapOverlay.classList.add('is-open');
+            document.documentElement.classList.add('modal-open');   // blocca lo scroll della pagina
+            playAudioTone(880, 'sine', 0.12);
+        }
+        function closeConceptMap() {
+            if (!cmapOverlay) return;
+            cmapOverlay.classList.remove('is-open');
+            document.documentElement.classList.remove('modal-open');
+        }
 
-        cosmicCloseBtn.addEventListener('click', () => {
-            cosmicOverlay.style.display = 'none';
-            document.body.style.overflow = 'auto';
-            playAudioTone(440, 'sine', 0.1);
+        if (graphOpenBtn) graphOpenBtn.addEventListener('click', openConceptMap);
+        if (cmapClose) cmapClose.addEventListener('click', closeConceptMap);
+        if (cmapOverlay) cmapOverlay.addEventListener('click', function (e) { if (e.target === cmapOverlay) closeConceptMap(); });
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape' && cmapOverlay && cmapOverlay.classList.contains('is-open')) closeConceptMap();
         });
-
-        cosmicSearch.addEventListener('input', (e) => {
-            cosmicSearchQuery = e.target.value.toLowerCase().trim();
-            renderCosmicConstellations();
+        if (cmapSearch) cmapSearch.addEventListener('input', function (e) {
+            cmapQuery = e.target.value.toLowerCase().trim();
+            renderConceptMap();
+        });
+        if (cmapSubjects) cmapSubjects.querySelectorAll('.cmap-subj').forEach(function (b) {
+            b.addEventListener('click', function () {
+                cmapSubject = b.getAttribute('data-subject');
+                cmapSubjects.querySelectorAll('.cmap-subj').forEach(function (x) { x.classList.toggle('active', x === b); });
+                renderConceptMap();
+            });
         });
 
         // Initialize study state on load

@@ -194,14 +194,14 @@
     queue = due.slice(0, SESSION_MAX).filter(id => cardById(id)); // solo schede presenti nel DOM
     qIndex = 0; revealed = false; reviewedCount = 0;
     document.getElementById('srsOverlay').classList.add('is-open');
-    document.body.style.overflow = 'hidden';
+    document.documentElement.classList.add('modal-open');   // blocca lo scroll della pagina
     if (queue.length === 0) renderEmpty();
     else renderCurrent();
   }
 
   function closeReview() {
     document.getElementById('srsOverlay').classList.remove('is-open');
-    document.body.style.overflow = '';
+    document.documentElement.classList.remove('modal-open');
     updateBadge();
   }
 
