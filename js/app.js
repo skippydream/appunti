@@ -5331,7 +5331,10 @@ ightarrow$ mitocondrio</strong>. La fotorespirazione dissipa energia (consuma AT
                     h.appendChild(label);
                     h.appendChild(Object.assign(document.createElement('span'), { className: 'card-section-line' }));
                     frag.appendChild(h);
-                    bySubj[s].byCat[cat].forEach(function (c) { frag.appendChild(c); });
+                    bySubj[s].byCat[cat].forEach(function (c) {
+                        if (hex) c.style.setProperty('--cat', hex);   // colore di sezione sulla card
+                        frag.appendChild(c);
+                    });
                 });
             });
             grid.appendChild(frag);   // i .card sono stati spostati nel frag, la grid era svuotata
