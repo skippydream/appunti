@@ -2087,293 +2087,121 @@
         }
 
         /* ═══════════════════════════════════════════════════════
-           TYPOGRAPHY & LAYOUT CONTROL PANEL
-           NOTE: font-size: 16px on .typo-panel + em units
-           = widget stays fixed regardless of root html scaling
+           WIDGET TIPOGRAFIA — coerente con gli altri widget flottanti
+           (vetro scuro + blur, come il timer). font-size:16px fisso così
+           il widget NON scala col carattere che esso stesso regola.
         ═══════════════════════════════════════════════════════ */
-
         .typo-panel {
             position: fixed;
-            top: 50%;
-            right: 0;
+            top: 50%; right: 0;
             transform: translateY(-50%);
-            z-index: 9500;
+            z-index: 900;
             display: flex;
             align-items: center;
-            /* Fixed size context — immune to root html font-size changes */
             font-size: 16px;
-            /* slide-in from right when body loads */
-            animation: typoPanelEntrance 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) both;
-            animation-delay: 0.8s;
         }
+        html.booting .typo-panel { display: none; }
 
-        @keyframes typoPanelEntrance {
-            from { opacity: 0; transform: translateY(-50%) translateX(80px); }
-            to   { opacity: 1; transform: translateY(-50%) translateX(0); }
-        }
-
-        /* ── Trigger pill ── */
         .typo-panel-trigger {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 4px;
-            width: 44px;
-            padding: 14px 0;
-            background: rgba(10, 10, 14, 0.82);
-            backdrop-filter: blur(18px) saturate(1.6);
-            -webkit-backdrop-filter: blur(18px) saturate(1.6);
-            border: 1.5px solid rgba(255, 255, 255, 0.12);
-            border-right: none;
-            border-radius: 14px 0 0 14px;
-            color: var(--text-secondary);
-            cursor: pointer;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            gap: 3px; width: 42px; padding: 13px 0;
+            background: rgba(18, 23, 31, 0.90);
+            backdrop-filter: blur(22px); -webkit-backdrop-filter: blur(22px);
+            border: 1px solid var(--border-strong); border-right: none;
+            border-radius: var(--radius-md) 0 0 var(--radius-md);
+            color: var(--text-secondary); cursor: pointer;
             font-family: var(--font-ui);
-            transition: background 0.25s ease, color 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
-            box-shadow: -4px 0 20px rgba(0, 0, 0, 0.4), inset 1px 0 0 rgba(255,255,255,0.04);
+            box-shadow: -8px 0 26px rgba(0, 0, 0, 0.35);
+            transition: color 0.2s ease, border-color 0.2s ease;
         }
-
         [data-theme="light"] .typo-panel-trigger {
             background: rgba(255, 255, 255, 0.88);
-            border-color: rgba(15, 23, 42, 0.1);
-            box-shadow: -4px 0 20px rgba(15, 23, 42, 0.08);
+            border-color: rgba(15, 23, 42, 0.10);
+            box-shadow: -8px 0 26px rgba(15, 23, 42, 0.08);
         }
-
         .typo-panel-trigger:hover,
-        .typo-panel.is-open .typo-panel-trigger {
-            background: rgba(20, 184, 166, 0.9);
-            border-color: rgba(20, 184, 166, 0.6);
-            color: #fff;
-            box-shadow: -6px 0 28px rgba(20, 184, 166, 0.35);
-        }
+        .typo-panel.is-open .typo-panel-trigger { color: var(--accent); border-color: var(--accent); }
+        .typo-icon { width: 17px; height: 17px; flex-shrink: 0; }
+        .typo-label-collapsed { font-size: 0.6em; font-weight: 800; letter-spacing: 0.05em; text-transform: uppercase; line-height: 1; }
 
-        .typo-icon {
-            width: 18px;
-            height: 18px;
-            flex-shrink: 0;
-        }
-
-        .typo-label-collapsed {
-            font-size: 0.6em;   /* em → relative to .typo-panel's fixed 16px = 9.6px */
-            font-weight: 800;
-            letter-spacing: 0.04em;
-            text-transform: uppercase;
-            line-height: 1;
-        }
-
-        /* ── Expanded body ── */
         .typo-panel-body {
-            width: 0;
-            overflow: hidden;
-            opacity: 0;
-            pointer-events: none;
-            background: rgba(8, 8, 12, 0.88);
-            backdrop-filter: blur(22px) saturate(1.8);
-            -webkit-backdrop-filter: blur(22px) saturate(1.8);
-            border: 1.5px solid rgba(255, 255, 255, 0.1);
-            border-right: none;
-            border-radius: 20px 0 0 20px;
-            padding: 0;
-            transition:
-                width 0.38s cubic-bezier(0.34, 1.4, 0.64, 1),
-                opacity 0.28s ease,
-                padding 0.38s cubic-bezier(0.34, 1.4, 0.64, 1);
-            box-shadow: -8px 0 40px rgba(0, 0, 0, 0.6), -1px 0 0 rgba(255,255,255,0.03) inset;
+            width: 0; overflow: hidden; opacity: 0; pointer-events: none;
+            background: rgba(18, 23, 31, 0.92);
+            backdrop-filter: blur(22px); -webkit-backdrop-filter: blur(22px);
+            border: 1px solid var(--border-strong); border-right: none;
+            border-radius: var(--radius-lg) 0 0 var(--radius-lg);
+            box-shadow: -12px 0 40px rgba(0, 0, 0, 0.45);
             font-family: var(--font-ui);
+            transition: width 0.32s cubic-bezier(0.25, 0.8, 0.25, 1), opacity 0.2s ease, padding 0.32s cubic-bezier(0.25, 0.8, 0.25, 1);
+            padding: 0;
         }
-
         [data-theme="light"] .typo-panel-body {
-            background: rgba(252, 252, 254, 0.92);
-            border-color: rgba(15, 23, 42, 0.09);
-            box-shadow: -8px 0 40px rgba(15, 23, 42, 0.1);
+            background: rgba(255, 255, 255, 0.94);
+            border-color: rgba(15, 23, 42, 0.10);
+            box-shadow: -12px 0 40px rgba(15, 23, 42, 0.10);
         }
-
         .typo-panel.is-open .typo-panel-body {
-            width: 250px;
-            opacity: 1;
-            pointer-events: auto;
-            padding: 1.2em 1.3em 1.1em;   /* em → fixed 16px base */
+            width: 256px; opacity: 1; pointer-events: auto;
+            padding: 1.1em 1.2em;
         }
 
-        /* ── Control block ── */
-        .typo-control {
-            display: flex;
-            flex-direction: column;
-            gap: 0.45em;
+        .typo-panel-title {
+            font-size: 0.7em; font-weight: 800; letter-spacing: 0.07em; text-transform: uppercase;
+            color: var(--text-secondary); margin-bottom: 0.9em;
         }
 
-        .typo-control-header {
-            display: flex;
-            align-items: center;
-            gap: 0.45em;
-        }
-
-        .typo-control-icon {
-            font-size: 0.78em;
-            font-weight: 800;
-            color: var(--accent);
-            min-width: 20px;
-            text-align: center;
-        }
-
-        .typo-control-label {
-            font-size: 0.72em;
-            font-weight: 700;
-            color: var(--text-secondary);
-            text-transform: uppercase;
-            letter-spacing: 0.06em;
-            flex: 1;
-        }
-
+        .typo-control { margin-bottom: 1em; }
+        .typo-control-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.55em; }
+        .typo-control-label { font-size: 0.85em; font-weight: 700; color: var(--text-primary); }
         .typo-control-value {
-            font-size: 0.72em;
-            font-weight: 800;
-            color: var(--accent);
-            background: rgba(20, 184, 166, 0.12);
-            padding: 2px 7px;
-            border-radius: 6px;
-            min-width: 52px;
-            text-align: right;
-            font-variant-numeric: tabular-nums;
-            letter-spacing: -0.02em;
-            transition: background 0.2s ease, color 0.2s ease;
+            font-size: 0.78em; font-weight: 800; color: var(--accent);
+            background: var(--accent-light); padding: 0.15em 0.55em; border-radius: var(--radius-pill);
+            font-variant-numeric: tabular-nums; min-width: 3.4em; text-align: center;
         }
 
-        /* ── Custom range slider ── */
-        .typo-slider-track {
-            position: relative;
-            height: 6px;
-            background: rgba(255, 255, 255, 0.07);
-            border-radius: 999px;
-            margin: 4px 0 2px;
-            overflow: visible;
-            --thumb-pct: 33%;
+        .typo-stepper { display: flex; align-items: center; gap: 0.55em; }
+        .typo-step {
+            flex-shrink: 0; width: 1.95em; height: 1.95em;
+            display: inline-flex; align-items: center; justify-content: center;
+            background: var(--bg-elevated); color: var(--text-primary);
+            border: 1.5px solid var(--border-strong); border-radius: var(--radius-sm);
+            font-size: 1.05em; font-weight: 800; line-height: 1; cursor: pointer;
+            transition: border-color 0.15s ease, color 0.15s ease, background 0.15s ease;
         }
+        .typo-step:hover { border-color: var(--accent); color: var(--accent); }
+        .typo-step:active { transform: translateY(1px); }
 
-        [data-theme="light"] .typo-slider-track {
-            background: rgba(15, 23, 42, 0.08);
+        /* Slider nativo, stilizzato coi token, con riempimento fino al pollice */
+        .typo-range {
+            flex: 1; min-width: 0; height: 6px; margin: 0;
+            -webkit-appearance: none; appearance: none;
+            border-radius: var(--radius-pill); cursor: pointer;
+            background: linear-gradient(90deg, var(--accent) var(--fill, 50%), var(--border-elegant) var(--fill, 50%));
         }
-
-        .typo-slider-fill {
-            position: absolute;
-            left: 0;
-            top: 0;
-            height: 100%;
-            border-radius: 999px;
-            background: linear-gradient(90deg, #0d9488, #2dd4bf);
-            pointer-events: none;
-            transition: width 0.08s linear;
-            box-shadow: 0 0 8px rgba(20, 184, 166, 0.5);
+        .typo-range::-webkit-slider-thumb {
+            -webkit-appearance: none; appearance: none;
+            width: 16px; height: 16px; border-radius: 50%;
+            background: var(--accent); border: 2.5px solid var(--bg-secondary);
+            box-shadow: 0 1px 5px rgba(0, 0, 0, 0.35); cursor: pointer;
         }
-
-        .typo-slider {
-            position: absolute;
-            inset: 0;
-            width: 100%;
-            margin: 0;
-            opacity: 0;
-            cursor: pointer;
-            z-index: 2;
-            top: -8px;
-            height: calc(100% + 16px);
+        .typo-range::-moz-range-thumb {
+            width: 16px; height: 16px; border-radius: 50%;
+            background: var(--accent); border: 2.5px solid var(--bg-secondary); cursor: pointer;
         }
+        .typo-range:focus-visible { outline: none; }
+        .typo-range:focus-visible::-webkit-slider-thumb { box-shadow: 0 0 0 3px var(--accent-glow); }
 
-        /* Visible thumb — overlaid on top of the track */
-        .typo-slider-track::after {
-            content: '';
-            position: absolute;
-            top: 50%;
-            transform: translate(-50%, -50%);
-            width: 16px;
-            height: 16px;
-            border-radius: 50%;
-            background: #fff;
-            border: 2.5px solid var(--accent);
-            box-shadow: 0 2px 8px rgba(20, 184, 166, 0.5);
-            pointer-events: none;
-            left: var(--thumb-pct, 33%);
-            transition: box-shadow 0.2s ease;
-        }
-
-        .typo-slider:focus-visible ~ .typo-slider-fill {
-            box-shadow: 0 0 0 3px rgba(20, 184, 166, 0.3), 0 0 8px rgba(20, 184, 166, 0.5);
-        }
-
-        /* ── Scale labels ── */
-        .typo-scale-labels {
-            display: flex;
-            justify-content: space-between;
-            font-size: 0.6em;
-            font-weight: 700;
-            color: rgba(161, 161, 170, 0.5);
-            text-transform: uppercase;
-            letter-spacing: 0.04em;
-        }
-
-        .typo-scale-labels span:first-child { font-size: 0.55em; }
-        .typo-scale-labels span:last-child  { font-size: 0.7em; }
-
-        /* ── Divider ── */
-        .typo-divider {
-            height: 1px;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.08) 40%, rgba(255,255,255,0.08) 60%, transparent);
-            margin: 0.6em 0;
-        }
-
-        [data-theme="light"] .typo-divider {
-            background: linear-gradient(90deg, transparent, rgba(15,23,42,0.06) 40%, rgba(15,23,42,0.06) 60%, transparent);
-        }
-
-        /* ── Preset buttons ── */
-        .typo-presets {
-            display: flex;
-            gap: 0.4em;
-            margin-top: 0.7em;
-        }
-
+        .typo-presets { display: flex; gap: 0.4em; margin-top: 0.2em; }
         .typo-preset-btn {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 3px;
-            padding: 0.45em 0.3em;
-            background: rgba(255,255,255,0.04);
-            border: 1.5px solid rgba(255,255,255,0.08);
-            border-radius: 10px;
-            color: var(--text-secondary);
-            font-size: 0.58em;
-            font-weight: 800;
-            text-transform: uppercase;
-            letter-spacing: 0.04em;
-            cursor: pointer;
-            transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
+            flex: 1; padding: 0.5em 0.3em;
+            background: var(--bg-elevated); border: 1.5px solid var(--border-elegant);
+            border-radius: var(--radius-sm); color: var(--text-secondary);
+            font-family: var(--font-ui); font-size: 0.68em; font-weight: 800;
+            text-transform: uppercase; letter-spacing: 0.04em; cursor: pointer;
+            transition: border-color 0.15s ease, color 0.15s ease, background 0.15s ease;
         }
-
-        [data-theme="light"] .typo-preset-btn {
-            background: rgba(15, 23, 42, 0.04);
-            border-color: rgba(15, 23, 42, 0.08);
-        }
-
-        .typo-preset-btn span {
-            font-size: 1.6em;   /* emoji — in em so it stays proportional to btn text */
-            line-height: 1;
-        }
-
-        .typo-preset-btn:hover {
-            background: var(--accent-light);
-            border-color: var(--accent);
-            color: var(--accent);
-            transform: translateY(-1px);
-        }
-
-        .typo-preset-btn.active {
-            background: var(--accent-light);
-            border-color: var(--accent);
-            color: var(--accent);
-            box-shadow: 0 4px 12px var(--accent-glow);
-        }
+        .typo-preset-btn:hover { border-color: var(--accent); color: var(--accent); }
+        .typo-preset-btn.active { background: var(--accent); border-color: var(--accent); color: #04201c; }
 
         /* ===== Integrazioni dal PDF d'esame (schede aggiunte) ===== */
         /* Badge "PDF" accanto al numero scheda, per riconoscere il materiale integrato */

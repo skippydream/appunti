@@ -56,7 +56,7 @@
         };
     </script>
     <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
-    <link rel="stylesheet" href="./css/style.css?v=20260621-24">
+    <link rel="stylesheet" href="./css/style.css?v=20260621-25">
 
     <!-- ============================================================
          BOOT PRE-PAINT — tema, tipografia e gate di avvio.
@@ -8129,52 +8129,43 @@ regolazione ormonale: quando la foglia invecchia (senescenza), la sua produzione
 
         <!-- Expanded body -->
         <div class="typo-panel-body" id="typoPanelBody">
+            <div class="typo-panel-title">Testo e larghezza</div>
+
             <!-- Font size control -->
             <div class="typo-control">
                 <div class="typo-control-header">
-                    <span class="typo-control-icon">Aa</span>
                     <span class="typo-control-label">Carattere</span>
                     <span class="typo-control-value" id="fontSizeValue">100%</span>
                 </div>
-                <div class="typo-slider-track">
-                    <input type="range" class="typo-slider" id="fontSizeSlider"
-                           min="75" max="150" value="100" step="5"
+                <div class="typo-stepper">
+                    <button type="button" class="typo-step" data-target="font" data-dir="-1" aria-label="Riduci carattere">&minus;</button>
+                    <input type="range" class="typo-range" id="fontSizeSlider"
+                           min="75" max="150" value="100" step="1"
                            aria-label="Dimensione carattere" aria-valuemin="75" aria-valuemax="150" aria-valuenow="100">
-                    <div class="typo-slider-fill" id="fontSizeFill"></div>
-                </div>
-                <div class="typo-scale-labels">
-                    <span>A</span>
-                    <span>A</span>
-                    <span>A</span>
+                    <button type="button" class="typo-step" data-target="font" data-dir="1" aria-label="Aumenta carattere">+</button>
                 </div>
             </div>
-
-            <div class="typo-divider"></div>
 
             <!-- Content width control -->
             <div class="typo-control">
                 <div class="typo-control-header">
-                    <span class="typo-control-icon">⬌</span>
                     <span class="typo-control-label">Larghezza</span>
                     <span class="typo-control-value" id="widthValue">1060px</span>
                 </div>
-                <div class="typo-slider-track">
-                    <input type="range" class="typo-slider" id="widthSlider"
-                           min="680" max="1600" value="1060" step="20"
+                <div class="typo-stepper">
+                    <button type="button" class="typo-step" data-target="width" data-dir="-1" aria-label="Riduci larghezza">&minus;</button>
+                    <input type="range" class="typo-range" id="widthSlider"
+                           min="680" max="1600" value="1060" step="10"
                            aria-label="Larghezza contenuto" aria-valuemin="680" aria-valuemax="1600" aria-valuenow="1060">
-                    <div class="typo-slider-fill" id="widthFill"></div>
-                </div>
-                <div class="typo-scale-labels">
-                    <span>Stretto</span>
-                    <span>Largo</span>
+                    <button type="button" class="typo-step" data-target="width" data-dir="1" aria-label="Aumenta larghezza">+</button>
                 </div>
             </div>
 
             <!-- Quick presets -->
             <div class="typo-presets">
-                <button class="typo-preset-btn" data-font="85" data-width="800" title="Vista compatta">Compatto</button>
-                <button class="typo-preset-btn active" data-font="100" data-width="1060" title="Vista standard">Standard</button>
-                <button class="typo-preset-btn" data-font="120" data-width="1300" title="Vista confortevole">Comodo</button>
+                <button type="button" class="typo-preset-btn" data-font="85" data-width="800" title="Vista compatta">Compatto</button>
+                <button type="button" class="typo-preset-btn active" data-font="100" data-width="1060" title="Vista standard">Standard</button>
+                <button type="button" class="typo-preset-btn" data-font="120" data-width="1300" title="Vista confortevole">Comodo</button>
             </div>
         </div>
     </div>
@@ -8190,8 +8181,6 @@ regolazione ormonale: quando la foglia invecchia (senescenza), la sua produzione
         const widthSlider = document.getElementById('widthSlider');
         const fontValue   = document.getElementById('fontSizeValue');
         const widthValue  = document.getElementById('widthValue');
-        const fontFill    = document.getElementById('fontSizeFill');
-        const widthFill   = document.getElementById('widthFill');
 
         const BASE_FONT   = 1.1; // rem — matches body { font-size: 1.1rem }
         const LS_KEY      = 'typo_prefs_v2';
@@ -8244,7 +8233,7 @@ regolazione ormonale: quando la foglia invecchia (senescenza), la sua produzione
             document.documentElement.style.fontSize = rootPx + 'px';
             fontValue.textContent = val + '%';
             fontSlider.setAttribute('aria-valuenow', val);
-            updateFill(fontFill, fontSlider);
+            setRangeFill(fontSlider);
         }
 
         function applyWidth(val) {
@@ -8253,15 +8242,13 @@ regolazione ormonale: quando la foglia invecchia (senescenza), la sua produzione
             document.documentElement.style.setProperty('--container-max', val + 'px');
             widthValue.textContent = val + 'px';
             widthSlider.setAttribute('aria-valuenow', val);
-            updateFill(widthFill, widthSlider);
+            setRangeFill(widthSlider);
         }
 
-        function updateFill(fillEl, slider) {
+        // Riempie lo slider nativo fino al pollice (via gradiente CSS su --fill).
+        function setRangeFill(slider) {
             const pct = ((slider.value - slider.min) / (slider.max - slider.min)) * 100;
-            fillEl.style.width = pct + '%';
-            // Sync the thumb pseudo-element via CSS custom property on the track
-            const track = fillEl.parentElement;
-            if (track) track.style.setProperty('--thumb-pct', pct + '%');
+            slider.style.setProperty('--fill', pct + '%');
         }
 
         // ── Panel open/close ──────────────────────────────────
@@ -8322,6 +8309,21 @@ regolazione ormonale: quando la foglia invecchia (senescenza), la sua produzione
             syncPresetButtons();
         });
 
+        // ── Stepper +/- (regolazione di precisione) ───────────
+        const STEP = { font: 2, width: 20 };
+        function nudge(target, dir) {
+            const slider = target === 'font' ? fontSlider : widthSlider;
+            const min = +slider.min, max = +slider.max;
+            const val = Math.max(min, Math.min(max, (+slider.value) + dir * STEP[target]));
+            slider.value = val;
+            if (target === 'font') applyFont(val); else applyWidth(val);
+            savePrefs();
+            syncPresetButtons();
+        }
+        document.querySelectorAll('.typo-step').forEach((btn) => {
+            btn.addEventListener('click', () => nudge(btn.dataset.target, parseInt(btn.dataset.dir, 10)));
+        });
+
         // ── Preset buttons ────────────────────────────────────
         function syncPresetButtons() {
             document.querySelectorAll('.typo-preset-btn').forEach(btn => {
@@ -8346,8 +8348,6 @@ regolazione ormonale: quando la foglia invecchia (senescenza), la sua produzione
         loadPrefs();
         applyFont(fontSlider.value);
         applyWidth(widthSlider.value);
-        updateFill(fontFill, fontSlider);
-        updateFill(widthFill, widthSlider);
         syncPresetButtons();
         body.setAttribute('aria-hidden', 'true');
         
@@ -8356,12 +8356,12 @@ regolazione ormonale: quando la foglia invecchia (senescenza), la sua produzione
     </script>
     <!-- Active JS Study Engine -->
     <!-- ?v= : cache-busting per garantire JS/CSS aggiornati dopo ogni deploy -->
-    <script src="./js/app.js?v=20260621-24"></script>
+    <script src="./js/app.js?v=20260621-25"></script>
     <!-- Persistenza automatica sul server (Cloudflare Pages Functions + KV) -->
-    <script src="./js/sync.js?v=20260621-24"></script>
+    <script src="./js/sync.js?v=20260621-25"></script>
     <!-- Ripetizione spaziata (SM-2) -->
-    <script src="./js/srs.js?v=20260621-24"></script>
+    <script src="./js/srs.js?v=20260621-25"></script>
     <!-- "Riprendi da dove eri" -->
-    <script src="./js/resume.js?v=20260621-24"></script>
+    <script src="./js/resume.js?v=20260621-25"></script>
 </body>
 </html>
