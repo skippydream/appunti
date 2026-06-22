@@ -3083,16 +3083,60 @@
             background: var(--bg-elevated);
         }
         .cmap-topic-head {
-            width: 100%; display: flex; align-items: center; gap: 0.8rem;
+            width: 100%; display: flex; align-items: center; gap: 0.55rem;
             padding: 0.85rem 1rem;
             background: none; border: none; cursor: pointer; text-align: left;
+            user-select: none;
         }
         .cmap-topic-head:hover { background: rgba(255, 255, 255, 0.03); }
         [data-theme="light"] .cmap-topic-head:hover { background: rgba(15, 23, 42, 0.03); }
+        .cmap-topic-head:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
         .cmap-topic-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--cat, var(--accent)); flex-shrink: 0; }
-        .cmap-topic-name { font-family: var(--font-ui); font-weight: 700; color: var(--text-primary); font-size: 0.95rem; }
-        .cmap-topic-count { margin-left: auto; font-size: 0.8rem; font-weight: 700; color: var(--text-secondary); white-space: nowrap; }
-        .cmap-topic-bar { width: 84px; height: 6px; border-radius: var(--radius-pill); background: var(--border-elegant); overflow: hidden; flex-shrink: 0; }
+        .cmap-topic-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-family: var(--font-ui); font-weight: 700; color: var(--text-primary); font-size: 0.95rem; }
+        .cmap-topic-count { font-size: 0.8rem; font-weight: 700; color: var(--text-secondary); white-space: nowrap; }
+        .cmap-topic-bar { width: 70px; height: 6px; border-radius: var(--radius-pill); background: var(--border-elegant); overflow: hidden; flex-shrink: 0; }
+
+        /* Chip difficoltà (assegnata a mano) */
+        .cmap-diff {
+            flex-shrink: 0;
+            padding: 0.15rem 0.5rem;
+            border-radius: var(--radius-pill);
+            font-family: var(--font-ui); font-size: 0.7rem; font-weight: 800;
+            border: 1.5px solid var(--border-strong);
+            background: none; color: var(--text-secondary);
+            cursor: pointer; white-space: nowrap;
+            transition: border-color 0.15s ease, color 0.15s ease, background 0.15s ease;
+        }
+        .cmap-diff:hover { border-color: var(--accent); }
+        .cmap-diff.diff-1 { color: var(--status-done); border-color: var(--status-done); }
+        .cmap-diff.diff-2 { color: var(--status-progress); border-color: var(--status-progress); }
+        .cmap-diff.diff-3 { color: var(--status-review); border-color: var(--status-review); }
+        .cmap-diff.diff-0 { font-weight: 700; opacity: 0.75; }
+
+        /* Indicatore "attenzione" suggerito dai dati */
+        .cmap-attn {
+            flex-shrink: 0;
+            width: 18px; height: 18px; border-radius: 50%;
+            display: inline-flex; align-items: center; justify-content: center;
+            font-size: 0.72rem; font-weight: 900; line-height: 1;
+            color: var(--status-progress);
+            background: color-mix(in srgb, var(--status-progress) 22%, transparent);
+        }
+        .cmap-attn.is-mismatch { color: var(--status-review); background: color-mix(in srgb, var(--status-review) 20%, transparent); }
+
+        .cmap-attn-summary {
+            margin-left: 0.5rem; padding: 0.1rem 0.55rem; border-radius: var(--radius-pill);
+            background: color-mix(in srgb, var(--status-progress) 18%, transparent);
+            color: var(--status-progress); font-weight: 800; font-size: 0.78rem; white-space: nowrap;
+        }
+
+        .cmap-sort {
+            padding: 0.55rem 0.7rem; border-radius: var(--radius-md);
+            background: var(--bg-elevated); color: var(--text-primary);
+            border: 1.5px solid var(--border-elegant);
+            font-family: var(--font-ui); font-size: 0.82rem; font-weight: 600; cursor: pointer;
+        }
+        .cmap-sort:focus { outline: none; border-color: var(--accent); }
         .cmap-topic-bar > span { display: block; height: 100%; background: var(--cat, var(--accent)); border-radius: var(--radius-pill); }
         .cmap-topic-chevron { color: var(--text-secondary); transition: transform 0.2s ease; flex-shrink: 0; font-size: 0.9rem; }
         .cmap-topic.is-open .cmap-topic-chevron { transform: rotate(180deg); }
@@ -3132,6 +3176,8 @@
             .cmap-toolbar, .cmap-summary { padding-left: 1rem; padding-right: 1rem; }
             .cmap-body { padding: 0.8rem 1rem 1.2rem; }
             .cmap-search-wrap { min-width: 140px; }
+            .cmap-topic-bar { display: none; }            /* riga più compatta: resta il conteggio */
+            .cmap-sort { flex: 1; }
         }
 
 
@@ -3143,3 +3189,36 @@
         html.modal-open { overflow: hidden; }
         .cmap-overlay, .cmap-body,
         .srs-overlay, .srs-modal { overscroll-behavior: contain; }
+
+        /* ============================================================
+           Intestazioni di argomento tra le schede di studio: si capisce
+           quando si passa da un argomento all'altro.
+           ============================================================ */
+        .card-section {
+            display: flex;
+            align-items: center;
+            gap: 0.7rem;
+            margin: 1rem 0 -0.6rem;        /* più spazio sopra, vicino al gruppo sotto */
+        }
+        .card-section:first-child { margin-top: 0; }
+        .card-section-dot {
+            width: 12px; height: 12px; border-radius: 50%;
+            background: var(--cat, var(--accent));
+            flex-shrink: 0;
+            box-shadow: 0 0 0 4px color-mix(in srgb, var(--cat, var(--accent)) 16%, transparent);
+        }
+        .card-section-label {
+            font-family: var(--font-ui);
+            font-weight: 800;
+            font-size: 0.95rem;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            color: var(--text-primary);
+            white-space: nowrap;
+        }
+        .card-section-line {
+            flex: 1;
+            height: 2px;
+            border-radius: 2px;
+            background: linear-gradient(90deg, color-mix(in srgb, var(--cat, var(--border-strong)) 55%, transparent), transparent);
+        }

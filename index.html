@@ -56,7 +56,7 @@
         };
     </script>
     <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
-    <link rel="stylesheet" href="./css/style.css?v=20260621-22">
+    <link rel="stylesheet" href="./css/style.css?v=20260621-24">
 
     <!-- ============================================================
          BOOT PRE-PAINT — tema, tipografia e gate di avvio.
@@ -8093,6 +8093,11 @@ regolazione ormonale: quando la foglia invecchia (senescenza), la sua produzione
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
                     <input type="text" class="cmap-search" id="cmapSearch" placeholder="Cerca un concetto…">
                 </div>
+                <select class="cmap-sort" id="cmapSort" title="Ordina gli argomenti" aria-label="Ordina gli argomenti">
+                    <option value="order">Ordine argomenti</option>
+                    <option value="difficulty">Per difficoltà</option>
+                    <option value="attention">Da attenzionare</option>
+                </select>
             </div>
             <div class="cmap-summary" id="cmapSummary"></div>
             <div class="cmap-body" id="cmapBody"></div>
@@ -8351,12 +8356,12 @@ regolazione ormonale: quando la foglia invecchia (senescenza), la sua produzione
     </script>
     <!-- Active JS Study Engine -->
     <!-- ?v= : cache-busting per garantire JS/CSS aggiornati dopo ogni deploy -->
-    <script src="./js/app.js?v=20260621-22"></script>
+    <script src="./js/app.js?v=20260621-24"></script>
     <!-- Persistenza automatica sul server (Cloudflare Pages Functions + KV) -->
-    <script src="./js/sync.js?v=20260621-22"></script>
+    <script src="./js/sync.js?v=20260621-24"></script>
     <!-- Ripetizione spaziata (SM-2) -->
-    <script src="./js/srs.js?v=20260621-22"></script>
+    <script src="./js/srs.js?v=20260621-24"></script>
     <!-- "Riprendi da dove eri" -->
-    <script src="./js/resume.js?v=20260621-22"></script>
+    <script src="./js/resume.js?v=20260621-24"></script>
 </body>
 </html>

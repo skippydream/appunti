@@ -4566,9 +4566,47 @@ ightarrow$ mitocondrio</strong>. La fotorespirazione dissipa energia (consuma AT
             return 's-todo';
         }
 
+        // ── Difficoltà degli argomenti: manuale (assegnata) + indice automatico ──
+        const TOPIC_DIFF_KEY = 'topic_difficulty_v1';
+        const DIFF_LABELS = { 1: 'Facile', 2: 'Media', 3: 'Difficile' };
+        let cmapSort = 'order';
+        const cmapOpen = new Set();   // argomenti espansi (preservati tra i re-render)
+
+        function loadTopicDiff() {
+            try { return JSON.parse(localStorage.getItem(TOPIC_DIFF_KEY) || '{}'); } catch (e) { return {}; }
+        }
+        function getTopicDiff(subject, cat) {
+            const d = loadTopicDiff();
+            return (d[subject] && d[subject][cat]) || 0;
+        }
+        function setTopicDiff(subject, cat, level) {
+            const d = loadTopicDiff();
+            if (!d[subject]) d[subject] = {};
+            if (level) d[subject][cat] = level; else delete d[subject][cat];
+            localStorage.setItem(TOPIC_DIFF_KEY, JSON.stringify(d));   // intercettata dal sync -> "non salvato"
+        }
+        function loadSrsMap() {
+            try { return JSON.parse(localStorage.getItem('srs_v1') || '{}'); } catch (e) { return {}; }
+        }
+        // Difficoltà SUGGERITA dai dati: 0 = nessun segnale, 1..3 (da "da ripassare"
+        // e dalle schede deboli nel ripasso: facilità bassa o errori).
+        function suggestedDifficulty(items, srs) {
+            let review = 0, weak = 0;
+            const total = items.length;
+            items.forEach(function (x) {
+                if ((studyStates[x.id] || 'todo') === 'review') review++;
+                const e = srs[x.id];
+                if (e && ((typeof e.ef === 'number' && e.ef < 2.0) || (e.lapses || 0) > 0)) weak++;
+            });
+            if (review === 0 && weak === 0) return 0;
+            const ratio = total ? (review + weak) / total : 0;
+            if (ratio >= 0.34) return 3;
+            if (ratio >= 0.12) return 2;
+            return 1;
+        }
+
         function renderConceptMap() {
             if (!cmapBody) return;
-            // Raccoglie le schede del soggetto dal DOM, raggruppate per categoria.
             const cards = Array.prototype.slice.call(
                 document.querySelectorAll('.card[data-subject="' + cmapSubject + '"]'));
             const groups = {};
@@ -4579,24 +4617,54 @@ ightarrow$ mitocondrio</strong>. La fotorespirazione dissipa energia (consuma AT
                 const t = c.querySelector('.card-title');
                 groups[cat].push({ id: c.getAttribute('data-id'), title: t ? t.textContent.trim() : '(scheda)' });
             });
-            // Ordine: per agronomia usa cleanTopicOrder, poi eventuali extra.
             let cats = order;
             if (cmapSubject === 'agronomia' && typeof cleanTopicOrder !== 'undefined') {
                 cats = cleanTopicOrder.filter(function (c) { return groups[c]; })
                     .concat(order.filter(function (c) { return cleanTopicOrder.indexOf(c) < 0; }));
             }
 
-            // Riepilogo del soggetto.
-            let total = 0, done = 0;
+            const srs = loadSrsMap();
+            const stats = {};
+            cats.forEach(function (cat, i) {
+                const items = groups[cat];
+                let dCount = 0;
+                items.forEach(function (x) { if ((studyStates[x.id] || 'todo') === 'done') dCount++; });
+                const manual = getTopicDiff(cmapSubject, cat);
+                const suggested = suggestedDifficulty(items, srs);
+                stats[cat] = {
+                    order: i, done: dCount, total: items.length,
+                    manual: manual, suggested: suggested,
+                    attention: Math.max(manual, suggested),
+                    mismatch: !!(manual && suggested && suggested > manual)
+                };
+            });
+
+            if (cmapSort === 'difficulty') {
+                cats = cats.slice().sort(function (a, b) {
+                    return (stats[b].manual - stats[a].manual) ||
+                           (stats[b].suggested - stats[a].suggested) ||
+                           (stats[a].order - stats[b].order);
+                });
+            } else if (cmapSort === 'attention') {
+                cats = cats.slice().sort(function (a, b) {
+                    return (stats[b].attention - stats[a].attention) ||
+                           ((stats[b].total - stats[b].done) - (stats[a].total - stats[a].done)) ||
+                           (stats[a].order - stats[b].order);
+                });
+            }
+
+            let total = 0, done = 0, attentionTopics = 0;
             cats.forEach(function (cat) {
-                groups[cat].forEach(function (x) { total++; if ((studyStates[x.id] || 'todo') === 'done') done++; });
+                total += stats[cat].total; done += stats[cat].done;
+                if (stats[cat].attention >= 2) attentionTopics++;
             });
             const pct = total ? Math.round(done / total * 100) : 0;
             if (cmapSummary) {
                 cmapSummary.innerHTML =
                     '<span><strong>' + done + '</strong> / ' + total + ' concetti imparati</span>' +
                     '<span class="cmap-summary-bar"><span style="width:' + pct + '%"></span></span>' +
-                    '<strong>' + pct + '%</strong>';
+                    '<strong>' + pct + '%</strong>' +
+                    (attentionTopics ? '<span class="cmap-attn-summary" title="Argomenti con difficoltà alta o segnalati dai tuoi dati">' + attentionTopics + ' da attenzionare</span>' : '');
             }
 
             cmapBody.innerHTML = '';
@@ -4609,9 +4677,8 @@ ightarrow$ mitocondrio</strong>. La fotorespirazione dissipa energia (consuma AT
                 if (!filtered.length) return;
                 anyVisible = true;
 
-                let dCount = 0;
-                items.forEach(function (x) { if ((studyStates[x.id] || 'todo') === 'done') dCount++; });
-                const tpct = Math.round(dCount / items.length * 100);
+                const st = stats[cat];
+                const tpct = Math.round(st.done / st.total * 100);
                 const hex = (typeof hexTagColors !== 'undefined' && hexTagColors[cat]) || '#14b8a6';
 
                 const concepts = filtered.map(function (x) {
@@ -4621,22 +4688,49 @@ ightarrow$ mitocondrio</strong>. La fotorespirazione dissipa energia (consuma AT
                         '<span class="cmap-concept-title">' + cmapEsc(x.title) + '</span></button>';
                 }).join('');
 
+                const diffLabel = st.manual ? DIFF_LABELS[st.manual] : 'Difficoltà';
+                const diffChip = '<button class="cmap-diff diff-' + (st.manual || 0) + '" type="button" ' +
+                    'title="Difficoltà percepita — clicca per cambiare">' + diffLabel + '</button>';
+                let attn = '';
+                if (st.suggested >= 2) {
+                    const tip = st.mismatch
+                        ? 'I tuoi dati indicano una difficoltà maggiore di quella impostata (consigliato: ' + DIFF_LABELS[st.suggested] + ').'
+                        : 'I tuoi dati indicano che qui fai più fatica (consigliato: ' + DIFF_LABELS[st.suggested] + ').';
+                    attn = '<span class="cmap-attn' + (st.mismatch ? ' is-mismatch' : '') + '" title="' + tip + '">!</span>';
+                }
+
                 const topic = document.createElement('div');
-                topic.className = 'cmap-topic' + (cmapQuery ? ' is-open' : '');
+                topic.className = 'cmap-topic' + ((cmapQuery || cmapOpen.has(cat)) ? ' is-open' : '');
                 topic.style.setProperty('--cat', hex);
                 topic.innerHTML =
-                    '<button class="cmap-topic-head" type="button" aria-expanded="' + (cmapQuery ? 'true' : 'false') + '">' +
+                    '<div class="cmap-topic-head" role="button" tabindex="0" aria-expanded="' + ((cmapQuery || cmapOpen.has(cat)) ? 'true' : 'false') + '">' +
                         '<span class="cmap-topic-dot"></span>' +
                         '<span class="cmap-topic-name">' + cmapEsc(cat) + '</span>' +
-                        '<span class="cmap-topic-count">' + dCount + '/' + items.length + '</span>' +
+                        attn +
+                        diffChip +
+                        '<span class="cmap-topic-count">' + st.done + '/' + st.total + '</span>' +
                         '<span class="cmap-topic-bar"><span style="width:' + tpct + '%"></span></span>' +
                         '<span class="cmap-topic-chevron">&#9662;</span>' +
-                    '</button>' +
+                    '</div>' +
                     '<div class="cmap-concepts">' + concepts + '</div>';
 
-                topic.querySelector('.cmap-topic-head').addEventListener('click', function () {
+                const head = topic.querySelector('.cmap-topic-head');
+                function toggleTopic() {
                     const open = topic.classList.toggle('is-open');
-                    this.setAttribute('aria-expanded', open ? 'true' : 'false');
+                    head.setAttribute('aria-expanded', open ? 'true' : 'false');
+                    if (open) cmapOpen.add(cat); else cmapOpen.delete(cat);
+                }
+                head.addEventListener('click', function (e) {
+                    if (e.target.closest('.cmap-diff')) return;   // il chip difficoltà gestisce il suo click
+                    toggleTopic();
+                });
+                head.addEventListener('keydown', function (e) {
+                    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleTopic(); }
+                });
+                head.querySelector('.cmap-diff').addEventListener('click', function (e) {
+                    e.stopPropagation();
+                    setTopicDiff(cmapSubject, cat, (st.manual + 1) % 4);   // cicla 0->1->2->3->0
+                    renderConceptMap();
                 });
                 topic.querySelectorAll('.cmap-concept').forEach(function (btn) {
                     btn.addEventListener('click', function () { navigateToConcept(btn.getAttribute('data-id')); });
@@ -4672,7 +4766,11 @@ ightarrow$ mitocondrio</strong>. La fotorespirazione dissipa energia (consuma AT
         function openConceptMap() {
             if (!cmapOverlay) return;
             cmapQuery = '';
+            cmapOpen.clear();
+            cmapSort = 'order';
             if (cmapSearch) cmapSearch.value = '';
+            const sortSel = document.getElementById('cmapSort');
+            if (sortSel) sortSel.value = 'order';
             cmapSubject = (typeof activeSubject !== 'undefined' && activeSubject) ? activeSubject : 'agronomia';
             if (['agronomia', 'biologia', 'botanica'].indexOf(cmapSubject) < 0) cmapSubject = 'agronomia';
             if (cmapSubjects) cmapSubjects.querySelectorAll('.cmap-subj').forEach(function (b) {
@@ -4702,9 +4800,15 @@ ightarrow$ mitocondrio</strong>. La fotorespirazione dissipa energia (consuma AT
         if (cmapSubjects) cmapSubjects.querySelectorAll('.cmap-subj').forEach(function (b) {
             b.addEventListener('click', function () {
                 cmapSubject = b.getAttribute('data-subject');
+                cmapOpen.clear();
                 cmapSubjects.querySelectorAll('.cmap-subj').forEach(function (x) { x.classList.toggle('active', x === b); });
                 renderConceptMap();
             });
+        });
+        const cmapSortSel = document.getElementById('cmapSort');
+        if (cmapSortSel) cmapSortSel.addEventListener('change', function () {
+            cmapSort = cmapSortSel.value;
+            renderConceptMap();
         });
 
         // Initialize study state on load
@@ -4725,7 +4829,10 @@ ightarrow$ mitocondrio</strong>. La fotorespirazione dissipa energia (consuma AT
         function initUnifiedApp() {
             // Load state now that all let variables are initialized to avoid TDZ ReferenceError
             if (typeof loadState === "function") loadState();
-            
+
+            buildCardSections();      // intestazioni di argomento tra le schede
+            updateSectionHeaders();
+
             renderBioSidebar();
             renderTaxonomyGrid();
             
@@ -5188,6 +5295,64 @@ ightarrow$ mitocondrio</strong>. La fotorespirazione dissipa energia (consuma AT
             });
         }
 
+        // Raggruppa le schede per (soggetto, argomento) e inserisce un'intestazione
+        // di sezione prima di ogni gruppo, così si capisce quando cambia argomento.
+        function buildCardSections() {
+            const grid = document.getElementById('cardsGrid');
+            if (!grid || grid.querySelector('.card-section')) return;   // una sola volta
+            const cards = Array.prototype.slice.call(grid.querySelectorAll('.card'));
+            const subjOrder = [];
+            const bySubj = {};
+            cards.forEach(function (c) {
+                const s = c.getAttribute('data-subject') || 'agronomia';
+                const cat = c.getAttribute('data-category') || 'Altro';
+                if (!bySubj[s]) { bySubj[s] = { catOrder: [], byCat: {} }; subjOrder.push(s); }
+                if (!bySubj[s].byCat[cat]) { bySubj[s].byCat[cat] = []; bySubj[s].catOrder.push(cat); }
+                bySubj[s].byCat[cat].push(c);
+            });
+            if (bySubj.agronomia && typeof cleanTopicOrder !== 'undefined') {
+                const present = bySubj.agronomia.catOrder;
+                bySubj.agronomia.catOrder = cleanTopicOrder.filter(function (c) { return present.indexOf(c) >= 0; })
+                    .concat(present.filter(function (c) { return cleanTopicOrder.indexOf(c) < 0; }));
+            }
+            const frag = document.createDocumentFragment();
+            subjOrder.forEach(function (s) {
+                bySubj[s].catOrder.forEach(function (cat) {
+                    const h = document.createElement('div');
+                    h.className = 'card-section';
+                    h.setAttribute('data-subject', s);
+                    h.setAttribute('data-category', cat);
+                    const hex = (typeof hexTagColors !== 'undefined' && hexTagColors[cat]) || '';
+                    if (hex) h.style.setProperty('--cat', hex);
+                    const label = document.createElement('span');
+                    label.className = 'card-section-label';
+                    label.textContent = cat;
+                    h.appendChild(Object.assign(document.createElement('span'), { className: 'card-section-dot' }));
+                    h.appendChild(label);
+                    h.appendChild(Object.assign(document.createElement('span'), { className: 'card-section-line' }));
+                    frag.appendChild(h);
+                    bySubj[s].byCat[cat].forEach(function (c) { frag.appendChild(c); });
+                });
+            });
+            grid.appendChild(frag);   // i .card sono stati spostati nel frag, la grid era svuotata
+        }
+
+        // Mostra l'intestazione di una sezione solo se ci sono schede visibili sotto.
+        function updateSectionHeaders() {
+            const grid = document.getElementById('cardsGrid');
+            if (!grid) return;
+            let header = null, visible = false;
+            Array.prototype.forEach.call(grid.children, function (el) {
+                if (el.classList.contains('card-section')) {
+                    if (header) header.style.display = visible ? '' : 'none';
+                    header = el; visible = false;
+                } else if (el.classList.contains('card') && el.style.display !== 'none') {
+                    visible = true;
+                }
+            });
+            if (header) header.style.display = visible ? '' : 'none';
+        }
+
         function updateFilters() {
             let visibleCount = 0;
             ensureActiveRecallRevealButtons();
@@ -5217,6 +5382,7 @@ ightarrow$ mitocondrio</strong>. La fotorespirazione dissipa energia (consuma AT
             });
             const emptyState = document.getElementById('emptyState');
             if (emptyState) emptyState.style.display = visibleCount === 0 ? 'flex' : 'none';
+            updateSectionHeaders();
         }
 
     
