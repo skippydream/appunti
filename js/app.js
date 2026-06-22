@@ -4318,19 +4318,23 @@ ightarrow$ mitocondrio</strong>. La fotorespirazione dissipa energia (consuma AT
         }
 
         function updateSessionsUI() {
-            if (completedSessionsCount > 0) {
-                minimizedSessionBadge.textContent = `x${completedSessionsCount}`;
+            // Nel timer si mostrano le sessioni DI OGGI (il totale è nella dashboard).
+            const todayStr = getFormattedDate(new Date());
+            const todayCount = sessionsCalendar[todayStr] || 0;
+
+            if (todayCount > 0) {
+                minimizedSessionBadge.textContent = `x${todayCount}`;
                 minimizedSessionBadge.style.display = 'inline-block';
             } else {
                 minimizedSessionBadge.style.display = 'none';
             }
-            
-            if (completedSessionsCount === 0) {
+
+            if (todayCount === 0) {
                 sessionsList.textContent = 'Nessuna';
             } else {
-                sessionsList.textContent = completedSessionsCount === 1
+                sessionsList.textContent = todayCount === 1
                     ? '1 sessione'
-                    : `${completedSessionsCount} sessioni`;
+                    : `${todayCount} sessioni`;
             }
         }
 

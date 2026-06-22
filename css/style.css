@@ -2948,28 +2948,38 @@
 
         /* FAB di salvataggio: flottante in basso a sinistra, always-on-top.
            Compare solo mentre un salvataggio è in corso, poi sparisce. */
-        /* FAB di salvataggio MANUALE: sempre visibile, in basso a sinistra. */
+        /* FAB di salvataggio MANUALE: sempre visibile, in basso a sinistra.
+           Stile coerente con il timer pomodoro (vetro scuro, blur, ombra). */
         .save-fab {
             position: fixed;
-            left: 1rem;
-            bottom: 1rem;
-            z-index: 100001;
+            left: 2em;
+            bottom: 2em;
+            z-index: 900;                       /* sotto il bootLoader (99999) */
             display: inline-flex;
             align-items: center;
-            gap: 0.5rem;
-            padding: 0.6rem 1rem;
-            background: var(--bg-elevated);
+            gap: 0.5em;
+            padding: 0.75em 1.15em;
+            background: rgba(18, 23, 31, 0.90);
+            backdrop-filter: blur(22px);
+            -webkit-backdrop-filter: blur(22px);
             color: var(--text-primary);
-            border: 1.5px solid var(--border-strong);
+            border: 1px solid var(--border-strong);
             border-radius: var(--radius-pill);
-            box-shadow: 0 10px 28px rgba(0, 0, 0, 0.35);
+            box-shadow: 0 18px 44px rgba(0,0,0,0.50), 0 0 0 1px rgba(20,184,166,0.05);
             font-family: var(--font-ui);
-            font-size: 0.85rem;
+            font-size: 14px;                    /* fisso: immune al root font-size, come il pomodoro */
             font-weight: 700;
             white-space: nowrap;
             cursor: pointer;
-            transition: border-color 0.2s ease, background 0.2s ease, color 0.2s ease, transform 0.15s ease;
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
         }
+        [data-theme="light"] .save-fab {
+            background: rgba(255, 255, 255, 0.85);
+            border-color: rgba(15, 23, 42, 0.08);
+            box-shadow: 0 20px 45px rgba(15, 23, 42, 0.05), 0 0 20px rgba(13, 148, 136, 0.03);
+        }
+        /* Non deve comparire sopra il loader di avvio. */
+        html.booting .save-fab { display: none; }
         .save-fab:hover { transform: translateY(-2px); border-color: var(--accent); }
         .save-fab:disabled { cursor: default; transform: none; }
         .save-fab svg { width: 16px; height: 16px; display: block; }
@@ -2986,10 +2996,8 @@
         .save-fab-check { display: none; color: var(--status-done); font-weight: 900; }
 
         /* modifiche non salvate: invita a salvare */
-        .save-fab.is-unsaved {
-            border-color: var(--accent);
-            background: color-mix(in srgb, var(--accent) 14%, var(--bg-elevated));
-        }
+        .save-fab.is-unsaved { border-color: var(--accent); color: var(--accent); }
+        .save-fab.is-unsaved .save-fab-icon { color: var(--accent); }
         /* in salvataggio */
         .save-fab.is-saving .save-fab-icon,
         .save-fab.is-saving .save-fab-check { display: none; }
@@ -3005,7 +3013,7 @@
         .save-fab.is-local { opacity: 0.7; }
         .save-fab.is-local .save-fab-icon { color: var(--text-secondary); }
         @media (max-width: 560px) {
-            .save-fab { left: 0.7rem; bottom: 0.7rem; font-size: 0.78rem; padding: 0.5rem 0.85rem; }
+            .save-fab { left: 1em; bottom: 1em; font-size: 13px; padding: 0.6em 0.95em; }
         }
 
         @keyframes syncPulse {

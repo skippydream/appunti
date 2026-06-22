@@ -65,8 +65,9 @@
   }
 
   // ── Caricamento all'apertura ──────────────────────────────────────
+  // NB: solo lettura (GET). Non è un salvataggio e NON deve mostrare lo stato
+  // "Salvataggio…" sul FAB (il salvataggio è solo manuale).
   async function load() {
-    fab('saving');
     try {
       const r = await fetch(API, { cache: 'no-store' });
       if (r.status === 501) { serverOk = false; fab('local'); return; }
