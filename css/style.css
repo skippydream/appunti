@@ -2956,9 +2956,62 @@
         .esame-review-why { font-size: 0.85rem; color: var(--text-secondary); margin-top: 0.35rem; line-height: 1.5; }
         .esame-result-actions { display: grid; gap: 0.6rem; }
 
+        /* — Badge reale / generata — */
+        .esame-q-head { display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap; margin-bottom: 0.5rem; }
+        .esame-q-head .esame-q-topic { margin-bottom: 0; }
+        .esame-src {
+            display: inline-block; font-size: 0.66rem; font-weight: 800;
+            text-transform: uppercase; letter-spacing: 0.05em;
+            padding: 0.15em 0.55em; border-radius: var(--radius-pill); white-space: nowrap;
+        }
+        .esame-src-real { background: var(--status-done); color: #04201c; }
+        .esame-src-gen { background: var(--border-elegant); color: var(--text-secondary); }
+        .esame-review-q .esame-src { vertical-align: middle; margin-right: 0.2em; }
+
+        /* — Selettore sorgente — */
+        .esame-seg-wrap { display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap; margin-bottom: 1.1rem; }
+        .esame-seg-label { font-size: 0.78rem; font-weight: 700; color: var(--text-secondary); }
+        .esame-seg { display: inline-flex; gap: 0.3rem; padding: 0.25rem; background: var(--bg-elevated); border: 1px solid var(--border-elegant); border-radius: var(--radius-pill); }
+        .esame-seg-btn {
+            display: inline-flex; align-items: center; gap: 0.35em; cursor: pointer;
+            padding: 0.35rem 0.7rem; border: none; background: transparent;
+            border-radius: var(--radius-pill); color: var(--text-secondary);
+            font-size: 0.82rem; font-weight: 700; transition: background 0.15s ease, color 0.15s ease;
+        }
+        .esame-seg-btn:hover { color: var(--text-primary); }
+        .esame-seg-btn.is-active { background: var(--accent); color: #04201c; }
+        .esame-seg-n { font-size: 0.85em; opacity: 0.8; }
+
+        /* — Punti deboli — */
+        .esame-weak { margin-bottom: 1.2rem; padding: 0.9rem 1rem; background: var(--bg-elevated); border: 1px solid var(--border-elegant); border-radius: var(--radius-md); }
+        .esame-weak-h { font-family: var(--font-ui); font-weight: 800; font-size: 0.9rem; color: var(--text-primary); margin-bottom: 0.6rem; }
+        .esame-weak-row {
+            display: flex; align-items: center; gap: 0.6rem; width: 100%;
+            background: none; border: none; cursor: pointer; padding: 0.25rem 0;
+            color: var(--text-primary); text-align: left;
+        }
+        .esame-weak-t { flex: 0 0 40%; font-size: 0.82rem; }
+        .esame-weak-bar { flex: 1; height: 8px; border-radius: var(--radius-pill); background: var(--border-elegant); overflow: hidden; }
+        .esame-weak-fill { display: block; height: 100%; border-radius: var(--radius-pill); background: linear-gradient(90deg, var(--status-review), var(--status-progress) 55%, var(--status-done)); }
+        .esame-weak-pct { flex: 0 0 auto; font-size: 0.78rem; font-weight: 800; color: var(--text-secondary); min-width: 3ch; text-align: right; }
+        .esame-weak-row:hover .esame-weak-t { color: var(--accent); }
+
+        .esame-mode-ref { border-style: dashed; }
+
+        /* — Numeri chiave — */
+        .esame-num-group { margin-bottom: 1rem; }
+        .esame-num-h {
+            font-family: var(--font-ui); font-weight: 800; font-size: 0.82rem;
+            text-transform: uppercase; letter-spacing: 0.05em; color: var(--accent); margin-bottom: 0.4rem;
+        }
+        .esame-num-list { margin: 0; padding-left: 1.1rem; }
+        .esame-num-list li { font-size: 0.92rem; line-height: 1.55; color: var(--text-primary); margin-bottom: 0.3rem; }
+        .esame-numeri .esame-secondary { margin-top: 0.6rem; }
+
         @media (max-width: 560px) {
             .esame-q-text { font-size: 1.1rem; }
             .esame-modal { padding: 1.2rem 1rem 1.4rem; }
+            .esame-weak-t { flex-basis: 45%; }
         }
 
         /* ============================================================
