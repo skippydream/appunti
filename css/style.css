@@ -2775,6 +2775,193 @@
         }
 
         /* ============================================================
+           Simulazione d'esame (esame.js)
+           ============================================================ */
+        .esame-overlay {
+            position: fixed; inset: 0; z-index: 100001;
+            display: none; align-items: center; justify-content: center;
+            padding: 1.5rem;
+            background: rgba(3, 4, 6, 0.78);
+            backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+        }
+        [data-theme="light"] .esame-overlay { background: rgba(15, 23, 42, 0.45); }
+        .esame-overlay.is-open { display: flex; }
+
+        .esame-modal {
+            position: relative;
+            width: 100%; max-width: 720px;
+            max-height: 90vh; overflow-y: auto;
+            background: var(--bg-secondary);
+            border: 1.5px solid var(--border-elegant);
+            border-radius: var(--radius-lg);
+            box-shadow: 0 30px 80px rgba(0,0,0,0.55);
+            padding: 1.6rem 1.6rem 1.8rem;
+        }
+        .esame-close {
+            position: absolute; top: 0.8rem; right: 1rem;
+            background: none; border: none; cursor: pointer;
+            font-size: 1.8rem; line-height: 1; color: var(--text-secondary);
+        }
+        .esame-close:hover { color: var(--text-primary); }
+        .esame-overlay, .esame-modal { overscroll-behavior: contain; }
+
+        .esame-progress {
+            height: 6px; border-radius: var(--radius-pill);
+            background: var(--border-elegant); overflow: hidden; margin: 0.4rem 2rem 0.9rem 0;
+        }
+        .esame-progress-bar {
+            height: 100%; width: 0%;
+            background: var(--accent); border-radius: var(--radius-pill);
+            transition: width 0.3s ease;
+        }
+        .esame-counter {
+            text-align: center; font-size: 0.8rem; font-weight: 700;
+            color: var(--text-secondary); margin-bottom: 1rem; min-height: 1em;
+        }
+
+        /* — Home / scelta modalità — */
+        .esame-h { font-family: var(--font-ui); font-size: 1.5rem; font-weight: 800; color: var(--text-primary); margin-bottom: 0.2rem; }
+        .esame-sub { color: var(--text-secondary); margin-bottom: 0.9rem; }
+        .esame-best {
+            display: inline-block; margin-bottom: 1.1rem; padding: 0.35rem 0.8rem;
+            border-radius: var(--radius-pill); background: var(--accent-light);
+            border: 1px solid var(--accent); color: var(--text-primary); font-size: 0.85rem;
+        }
+        .esame-modes { display: grid; gap: 0.7rem; margin-bottom: 1.4rem; }
+        .esame-mode {
+            display: flex; flex-direction: column; gap: 0.25rem; text-align: left;
+            padding: 1rem 1.1rem; cursor: pointer;
+            background: var(--bg-elevated);
+            border: 1.5px solid var(--border-elegant); border-radius: var(--radius-md);
+            transition: transform 0.15s ease, border-color 0.15s ease;
+        }
+        .esame-mode:hover { transform: translateY(-2px); border-color: var(--accent); }
+        .esame-mode-exam { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 8%, var(--bg-elevated)); }
+        .esame-mode-t { font-family: var(--font-ui); font-weight: 800; font-size: 1.05rem; color: var(--text-primary); }
+        .esame-mode-d { font-size: 0.85rem; color: var(--text-secondary); line-height: 1.45; }
+        .esame-badge {
+            display: inline-flex; align-items: center; justify-content: center;
+            min-width: 1.5em; height: 1.5em; padding: 0 0.4em; margin-left: 0.3em;
+            border-radius: var(--radius-pill);
+            background: var(--status-review); color: #fff;
+            font-size: 0.75em; font-weight: 800; line-height: 1;
+        }
+        .esame-train-t { font-family: var(--font-ui); font-weight: 800; color: var(--text-primary); margin-bottom: 0.6rem; }
+        .esame-train-d { font-weight: 500; font-size: 0.8rem; color: var(--text-secondary); }
+        .esame-topics { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+        .esame-topic {
+            display: inline-flex; align-items: center; gap: 0.4em;
+            padding: 0.5rem 0.8rem; cursor: pointer;
+            background: var(--bg-elevated);
+            border: 1.5px solid var(--border-elegant); border-radius: var(--radius-pill);
+            color: var(--text-primary); font-size: 0.85rem; font-weight: 600;
+            transition: border-color 0.15s ease, background 0.15s ease;
+        }
+        .esame-topic:hover { border-color: var(--accent); background: var(--accent-light); }
+        .esame-topic-all { border-color: var(--accent); }
+        .esame-topic-n {
+            display: inline-flex; align-items: center; justify-content: center;
+            min-width: 1.5em; height: 1.5em; padding: 0 0.35em;
+            border-radius: var(--radius-pill); background: var(--border-elegant);
+            font-size: 0.75em; font-weight: 800;
+        }
+
+        /* — Domanda — */
+        .esame-q-topic {
+            display: inline-block; font-size: 0.72rem; font-weight: 800;
+            text-transform: uppercase; letter-spacing: 0.06em;
+            color: var(--accent); margin-bottom: 0.5rem;
+        }
+        .esame-q-text {
+            font-family: var(--font-ui); font-size: 1.25rem; font-weight: 800;
+            color: var(--text-primary); line-height: 1.3; margin-bottom: 1.1rem;
+        }
+        .esame-opts { display: grid; gap: 0.55rem; }
+        .esame-opt {
+            display: flex; align-items: flex-start; gap: 0.7rem; text-align: left;
+            padding: 0.75rem 0.9rem; cursor: pointer; width: 100%;
+            background: var(--bg-elevated);
+            border: 1.5px solid var(--border-elegant); border-radius: var(--radius-md);
+            color: var(--text-primary); font-size: 0.98rem; line-height: 1.4;
+            transition: border-color 0.15s ease, background 0.15s ease;
+        }
+        .esame-opt:not(:disabled):hover { border-color: var(--accent); background: var(--accent-light); }
+        .esame-opt:disabled { cursor: default; }
+        .esame-opt-l {
+            flex: 0 0 auto; display: inline-flex; align-items: center; justify-content: center;
+            width: 1.7em; height: 1.7em; border-radius: 50%;
+            background: var(--border-elegant); color: var(--text-primary);
+            font-weight: 800; font-size: 0.85em;
+        }
+        .esame-opt-x { flex: 1; padding-top: 0.12em; }
+        .esame-opt.is-chosen { border-color: var(--accent); background: var(--accent-light); }
+        .esame-opt.is-correct { border-color: var(--status-done); background: color-mix(in srgb, var(--status-done) 16%, var(--bg-elevated)); }
+        .esame-opt.is-correct .esame-opt-l { background: var(--status-done); color: #fff; }
+        .esame-opt.is-wrong { border-color: var(--status-review); background: color-mix(in srgb, var(--status-review) 14%, var(--bg-elevated)); }
+        .esame-opt.is-wrong .esame-opt-l { background: var(--status-review); color: #fff; }
+
+        .esame-explain { margin-top: 1.1rem; padding-top: 1rem; border-top: 1px solid var(--border-elegant); }
+        .esame-verdict { font-family: var(--font-ui); font-weight: 800; font-size: 0.95rem; margin-bottom: 0.5rem; }
+        .esame-verdict.ok { color: var(--status-done); }
+        .esame-verdict.no { color: var(--status-review); }
+        .esame-why { font-size: 0.95rem; color: var(--text-primary); line-height: 1.55; }
+        .esame-why-t { color: var(--text-secondary); margin-top: 0.3rem; }
+
+        .esame-nav { margin-top: 1.3rem; }
+        .esame-next {
+            display: block; width: 100%; padding: 0.9rem;
+            background: var(--accent); color: #04201c;
+            border: none; border-radius: var(--radius-md);
+            font-family: var(--font-ui); font-size: 1rem; font-weight: 800; cursor: pointer;
+            transition: filter 0.2s ease;
+        }
+        .esame-next:hover { filter: brightness(1.08); }
+        .esame-secondary {
+            display: block; width: 100%; padding: 0.8rem;
+            background: transparent; color: var(--text-secondary);
+            border: 1.5px solid var(--border-elegant); border-radius: var(--radius-md);
+            font-family: var(--font-ui); font-size: 0.95rem; font-weight: 700; cursor: pointer;
+        }
+        .esame-secondary:hover { color: var(--text-primary); border-color: var(--accent); }
+
+        /* — Risultato — */
+        .esame-result { text-align: center; }
+        .esame-score-ring {
+            display: inline-flex; flex-direction: column; align-items: center; justify-content: center;
+            width: 130px; height: 130px; border-radius: 50%; margin: 0.4rem auto 0.8rem;
+            border: 8px solid var(--border-elegant);
+        }
+        .esame-score-ring.pass { border-color: var(--status-done); }
+        .esame-score-ring.fail { border-color: var(--status-review); }
+        .esame-score-n { font-family: var(--font-ui); font-size: 1.9rem; font-weight: 900; color: var(--text-primary); line-height: 1; }
+        .esame-score-pct { font-size: 0.85rem; font-weight: 700; color: var(--text-secondary); }
+        .esame-verdict-big { font-family: var(--font-ui); font-size: 1.2rem; font-weight: 800; margin-bottom: 1.2rem; }
+        .esame-verdict-big.ok { color: var(--status-done); }
+        .esame-verdict-big.no { color: var(--status-review); }
+        .esame-thr { font-size: 0.8rem; font-weight: 600; color: var(--text-secondary); }
+        .esame-allright { color: var(--status-done); font-weight: 700; margin-bottom: 1.2rem; }
+
+        .esame-review { text-align: left; margin-bottom: 1.2rem; }
+        .esame-review-h { font-family: var(--font-ui); font-weight: 800; color: var(--text-primary); margin-bottom: 0.6rem; }
+        .esame-review-item {
+            padding: 0.8rem 0.9rem; margin-bottom: 0.6rem;
+            background: var(--bg-elevated);
+            border: 1px solid var(--border-elegant);
+            border-left: 3px solid var(--status-review); border-radius: var(--radius-md);
+        }
+        .esame-review-q { font-weight: 700; color: var(--text-primary); margin-bottom: 0.4rem; line-height: 1.4; }
+        .esame-review-a { font-size: 0.88rem; line-height: 1.4; }
+        .esame-review-yours { color: var(--status-review); }
+        .esame-review-right { color: var(--status-done); }
+        .esame-review-why { font-size: 0.85rem; color: var(--text-secondary); margin-top: 0.35rem; line-height: 1.5; }
+        .esame-result-actions { display: grid; gap: 0.6rem; }
+
+        @media (max-width: 560px) {
+            .esame-q-text { font-size: 1.1rem; }
+            .esame-modal { padding: 1.2rem 1rem 1.4rem; }
+        }
+
+        /* ============================================================
            "Riprendi da dove eri" — banner sottile sotto la navbar materie
            ============================================================ */
         .resume-banner {

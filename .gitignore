@@ -4,3 +4,6 @@
 # Dispense PDF (troppo grande per il repo / deploy)
 *.pdf
 dispense_agronomia copia.pdf
+
+# Foto dell'esame (materiale personale, non va pubblicato sul sito)
+esame/
