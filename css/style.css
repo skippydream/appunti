@@ -3365,3 +3365,28 @@
         .scroll-prog-meta { font-size: 0.7rem; font-weight: 700; color: var(--text-secondary); }
 
         @media (max-width: 900px) { .scroll-prog { display: none !important; } }
+
+/* ==========================================================================
+   IMMAGINI SCHEDE — dimensione normalizzata (min/max) — luglio 2026
+   Le immagini avevano width:100% inline: piccole venivano ingigantite (fino a
+   >2000px) e larghe-basse in colonna stretta diventavano minuscole. Le figure
+   vanno a tutta larghezza; le img usano dimensione naturale con banda min/max.
+   ========================================================================== */
+.card-body figure {
+    flex: 1 1 100% !important;
+    max-width: 100%;
+    margin: 0.5rem auto !important;
+    text-align: center;
+}
+.card-body img {
+    width: auto !important;
+    height: auto !important;
+    max-width: 100%;
+    max-height: 340px;
+    min-width: min(100%, 200px);
+    object-fit: contain;
+    display: block;
+    margin: 0.2rem auto;
+    cursor: zoom-in;
+}
+.card-body figcaption { text-align: center; }
