@@ -5196,7 +5196,7 @@ ightarrow$ mitocondrio</strong>. La fotorespirazione dissipa energia (consuma AT
             if (!container) return;
             const catMap = {
                 agronomia: ["Introduzione", "Forme di agricoltura", "Suolo", "Agrometeo", "Lavorazioni", "Sistemazioni idraulico agrarie", "Irrigazione", "Chimica del suolo", "Nutrizione minerale", "Concimazione", "Avversità", "Erbologia", "Gestione colture"],
-                biologia:  ["Generalità", "Citologia: La Cellula Vegetale", "Istologia Vegetale", "Organografia: Fusti, Radici e Foglie", "Riproduzione sessuata e asessuata", "Fisiologia Vegetale"],
+                biologia:  ["Generalità", "Citologia: La Cellula Vegetale", "Istologia Vegetale", "Organografia: Fusti, Radici e Foglie", "Riproduzione sessuata e asessuata"],
                 botanica:  ["Sistematica: Introduzione e Metodi", "Sistematica: Gimnosperme", "Sistematica: Angiosperme"]
             };
             container.innerHTML = '<button class="tag-btn active" data-category="all">Tutte le categorie</button>';
@@ -5240,6 +5240,10 @@ ightarrow$ mitocondrio</strong>. La fotorespirazione dissipa energia (consuma AT
             if(typeof searchBar!=='undefined' && searchBar) { searchBar.value=''; searchQuery=''; }
             currentFilter = 'all';
             rebuildCategoryTags(subject);
+            // Strumenti solo-Agronomia: l'Esame (quiz) ha solo le domande di
+            // Agronomia, quindi va nascosto negli altri corsi.
+            const _esameBtn = document.getElementById('esameOpenBtn');
+            if (_esameBtn) _esameBtn.style.display = (subject === 'agronomia') ? '' : 'none';
             updateFilters();
             typesetSubject(subject);   // tipizza le formule del soggetto se non già fatto
             updateTrackerStats();
