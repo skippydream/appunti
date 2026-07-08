@@ -7,3 +7,5 @@ dispense_agronomia copia.pdf
 
 # Foto dell'esame (materiale personale, non va pubblicato sul sito)
 esame/
+*.md
+bioebot/mkitdown.py
