@@ -1262,8 +1262,10 @@
     try {
       const o = JSON.parse(localStorage.getItem(KEY) || '{}');
       o.wrong = o.wrong || {}; o.seen = o.seen || {}; o.miss = o.miss || {}; o.history = o.history || [];
+      // changes = statistiche sui ripensamenti in simulazione (efficacia del cambio risposta).
+      o.changes = o.changes || { improved: 0, worsened: 0, neutral: 0 };
       return o;
-    } catch (e) { return { wrong: {}, seen: {}, miss: {}, history: [] }; }
+    } catch (e) { return { wrong: {}, seen: {}, miss: {}, history: [], changes: { improved: 0, worsened: 0, neutral: 0 } }; }
   }
   function save() { try { localStorage.setItem(KEY, JSON.stringify(store)); } catch (e) {} }
   let store = load();
@@ -1277,6 +1279,15 @@
     else { store.wrong[qid] = (store.wrong[qid] || 0) + 1; store.miss[qid] = (store.miss[qid] || 0) + 1; }
   }
   function wrongIds() { return Object.keys(store.wrong).map(Number); }
+
+  // Registra un ripensamento: confronta la prima scelta con quella finale.
+  // improved = da sbagliata a giusta · worsened = da giusta a sbagliata · neutral = sbagliata→sbagliata.
+  function recordChange(firstOk, finalOk) {
+    const c = store.changes || (store.changes = { improved: 0, worsened: 0, neutral: 0 });
+    if (!firstOk && finalOk) c.improved++;
+    else if (firstOk && !finalOk) c.worsened++;
+    else c.neutral++;
+  }
 
   // Accuratezza per argomento (per i "punti deboli"): {topic:{seen,miss}}.
   function topicStats() {
@@ -1405,6 +1416,46 @@
       '</div>'
     ) : '';
 
+    // Efficacia del cambio risposta (ripensamenti in simulazione)
+    const ch = store.changes || { improved: 0, worsened: 0, neutral: 0 };
+    const decisive = ch.improved + ch.worsened;      // cambi che hanno spostato l'esito
+    const totalCh = decisive + ch.neutral;           // tutti i ripensamenti
+    let changeHTML = '';
+    if (totalCh > 0) {
+      const eff = decisive ? Math.round((ch.improved / decisive) * 100) : null;
+      let verdict, cls;
+      if (eff === null) {
+        verdict = 'Hai cambiato idea ' + totalCh + ' ' + (totalCh === 1 ? 'volta' : 'volte') +
+          ', ma senza mai spostare l\'esito: restavi comunque sulla risposta sbagliata.';
+        cls = 'neutral';
+      } else if (eff > 50) {
+        verdict = 'Cambiare idea ti conviene: quando ci ripensi, ci guadagni più spesso di quanto ci perdi. Fidati del ripensamento.';
+        cls = 'good';
+      } else if (eff < 50) {
+        verdict = 'Meglio la prima idea: il cambio risposta non è una strategia vincente per te. Nel dubbio, tieni l\'istinto.';
+        cls = 'bad';
+      } else {
+        verdict = 'In equilibrio: cambiare o restare, per te finora è indifferente.';
+        cls = 'neutral';
+      }
+      const pctLabel = eff === null ? '—' : eff + '%';
+      changeHTML =
+        '<div class="esame-change esame-change-' + cls + '">' +
+          '<div class="esame-change-top">' +
+            '<div class="esame-change-h">Efficacia del cambio risposta</div>' +
+            '<div class="esame-change-pct">' + pctLabel + '</div>' +
+          '</div>' +
+          (eff !== null ? '<div class="esame-change-bar"><span class="esame-change-fill" style="width:' + eff + '%"></span></div>' : '') +
+          '<div class="esame-change-msg">' + verdict + '</div>' +
+          '<div class="esame-change-stats">' +
+            'Su ' + totalCh + ' ' + (totalCh === 1 ? 'ripensamento' : 'ripensamenti') + ': ' +
+            '<span class="esame-change-good">+' + ch.improved + ' recuperate</span> · ' +
+            '<span class="esame-change-bad">−' + ch.worsened + ' perse</span> · ' +
+            '<span class="esame-change-neu">=' + ch.neutral + ' invariate</span>' +
+          '</div>' +
+        '</div>';
+    }
+
     // Argomenti dal pool corrente
     const topicChips = TOPICS.map(t => {
       const n = p.filter(q => q.topic === t).length;
@@ -1418,6 +1469,7 @@
         '<p class="esame-sub">' + nReal + ' domande reali dell\'appello + ' + nGen + ' generate sullo stesso modello.</p>' +
         (best ? '<div class="esame-best">Record simulazione: <strong>' + best.score + '/' + best.total + '</strong></div>' : '') +
         weakHTML +
+        changeHTML +
         '<div class="esame-seg-wrap">' +
           '<div class="esame-seg-label">Attingi da</div>' +
           '<div class="esame-seg">' + seg + '</div>' +
@@ -1565,7 +1617,7 @@
       (qIndex + 1) + ' / ' + queue.length + (mode === 'exam' ? '  ·  Simulazione' : '  ·  Allenamento');
 
     const opts = item.opts.map((o, i) =>
-      '<button class="esame-opt" data-i="' + i + '">' +
+      '<button class="esame-opt' + (mode === 'exam' && item.sel === i ? ' is-chosen' : '') + '" data-i="' + i + '">' +
         '<span class="esame-opt-l">' + LETTERS[i] + '</span>' +
         '<span class="esame-opt-x">' + escapeHtml(o) + '</span>' +
       '</button>').join('');
@@ -1577,6 +1629,7 @@
           srcBadge(item.ref) +
         '</div>' +
         '<h3 class="esame-q-text">' + escapeHtml(item.ref.q) + '</h3>' +
+        (mode === 'exam' ? '<div class="esame-q-hint">Puoi cambiare risposta finché non passi alla prossima.</div>' : '') +
         '<div class="esame-opts" id="esameOpts">' + opts + '</div>' +
         '<div class="esame-explain" id="esameExplain" hidden></div>' +
         '<div class="esame-nav" id="esameNav"></div>' +
@@ -1585,28 +1638,34 @@
     stageEl().querySelectorAll('.esame-opt').forEach(b => {
       b.addEventListener('click', () => choose(parseInt(b.getAttribute('data-i'), 10)));
     });
+
+    // In simulazione la barra di navigazione è sempre presente (Indietro + Avanti);
+    // Avanti si attiva solo dopo aver scelto un'opzione.
+    if (mode === 'exam') renderNav();
   }
 
   function choose(i) {
+    const item = queue[qIndex];
+
+    if (mode === 'exam') {
+      // Nessun feedback e nessun commit: la scelta resta modificabile finché non si va avanti.
+      item.sel = i;
+      if (item.firstSel == null) item.firstSel = i;
+      stageEl().querySelectorAll('.esame-opt').forEach((b, idx) => {
+        b.classList.toggle('is-chosen', idx === i);
+      });
+      renderNav();
+      return;
+    }
+
     if (answered) return;
     answered = true;
-    const item = queue[qIndex];
     const ok = (i === item.correct);
     answers.push({ item: item, chosen: i, ok: ok });
     recordAnswer(item.ref.id, ok);
     save();
 
     const optBtns = stageEl().querySelectorAll('.esame-opt');
-
-    if (mode === 'exam') {
-      // Nessun feedback: segna solo la scelta e vai avanti.
-      optBtns.forEach((b, idx) => {
-        b.disabled = true;
-        if (idx === i) b.classList.add('is-chosen');
-      });
-      renderNav();
-      return;
-    }
 
     // Allenamento: feedback immediato + spiegazione.
     optBtns.forEach((b, idx) => {
@@ -1626,19 +1685,52 @@
   function renderNav() {
     const nav = document.getElementById('esameNav');
     const last = (qIndex === queue.length - 1);
-    nav.innerHTML = '<button class="esame-next" id="esameNext">' +
-      (last ? 'Vedi risultato' : 'Avanti') + '</button>';
+    const item = queue[qIndex];
+    // In simulazione si può tornare indietro; Avanti resta bloccato finché non hai scelto.
+    const canBack = (mode === 'exam' && qIndex > 0);
+    const canNext = (mode !== 'exam') || (item.sel != null);
+    nav.className = 'esame-nav' + (canBack ? ' is-row' : '');
+    nav.innerHTML =
+      (canBack ? '<button class="esame-secondary esame-back" id="esamePrev">Indietro</button>' : '') +
+      '<button class="esame-next" id="esameNext"' + (canNext ? '' : ' disabled') + '>' +
+        (last ? 'Vedi risultato' : 'Avanti') + '</button>';
     document.getElementById('esameNext').addEventListener('click', next);
+    if (canBack) document.getElementById('esamePrev').addEventListener('click', prev);
+  }
+
+  function prev() {
+    if (qIndex === 0) return;
+    qIndex--;
+    renderQuestion();
   }
 
   function next() {
+    // In simulazione non si avanza senza aver scelto.
+    if (mode === 'exam' && queue[qIndex].sel == null) return;
     qIndex++;
     if (qIndex >= queue.length) return finish();
     renderQuestion();
   }
 
+  // In simulazione le risposte non vengono registrate al momento della scelta
+  // (per permettere i ripensamenti): si consolidano tutte qui, alla fine.
+  function commitExam() {
+    answers = [];
+    queue.forEach(function (item) {
+      if (item.sel == null) return; // domanda non risposta: la saltiamo
+      const ok = (item.sel === item.correct);
+      answers.push({ item: item, chosen: item.sel, ok: ok });
+      recordAnswer(item.ref.id, ok);
+      if (item.firstSel != null && item.firstSel !== item.sel) {
+        recordChange(item.firstSel === item.correct, ok);
+      }
+    });
+    save();
+  }
+
   // ── Risultato ────────────────────────────────────────────────────────
   function finish() {
+    if (mode === 'exam') commitExam();
     setProgress(100);
     document.getElementById('esameCounter').textContent = '';
     const total = answers.length;

@@ -2923,6 +2923,33 @@
             font-family: var(--font-ui); font-size: 0.95rem; font-weight: 700; cursor: pointer;
         }
         .esame-secondary:hover { color: var(--text-primary); border-color: var(--accent); }
+        .esame-next:disabled { opacity: 0.45; cursor: default; filter: none; }
+        .esame-nav.is-row { display: flex; gap: 0.6rem; align-items: stretch; }
+        .esame-nav.is-row .esame-next { flex: 1; }
+        .esame-nav.is-row .esame-back { width: auto; flex: 0 0 auto; padding-left: 1.2rem; padding-right: 1.2rem; }
+        .esame-q-hint { font-size: 0.8rem; color: var(--text-secondary); margin: -0.2rem 0 0.8rem; }
+
+        /* — Efficacia del cambio risposta — */
+        .esame-change {
+            margin-bottom: 1.2rem; padding: 0.9rem 1rem;
+            background: var(--bg-elevated); border: 1px solid var(--border-elegant);
+            border-left-width: 4px; border-radius: var(--radius-md);
+        }
+        .esame-change-good { border-left-color: var(--status-done); }
+        .esame-change-bad { border-left-color: var(--status-review); }
+        .esame-change-neutral { border-left-color: var(--status-progress); }
+        .esame-change-top { display: flex; align-items: baseline; justify-content: space-between; gap: 0.6rem; }
+        .esame-change-h { font-family: var(--font-ui); font-weight: 800; font-size: 0.9rem; color: var(--text-primary); }
+        .esame-change-pct { font-family: var(--font-ui); font-weight: 900; font-size: 1.35rem; color: var(--text-primary); line-height: 1; }
+        .esame-change-good .esame-change-pct { color: var(--status-done); }
+        .esame-change-bad .esame-change-pct { color: var(--status-review); }
+        .esame-change-bar { height: 8px; margin: 0.55rem 0 0.6rem; border-radius: var(--radius-pill); background: var(--border-elegant); overflow: hidden; }
+        .esame-change-fill { display: block; height: 100%; border-radius: var(--radius-pill); background: linear-gradient(90deg, var(--status-review), var(--status-progress) 50%, var(--status-done)); }
+        .esame-change-msg { font-size: 0.85rem; color: var(--text-secondary); line-height: 1.5; }
+        .esame-change-stats { margin-top: 0.5rem; font-size: 0.78rem; color: var(--text-secondary); }
+        .esame-change-stats .esame-change-good { color: var(--status-done); font-weight: 700; }
+        .esame-change-stats .esame-change-bad { color: var(--status-review); font-weight: 700; }
+        .esame-change-stats .esame-change-neu { color: var(--text-secondary); font-weight: 700; }
 
         /* — Risultato — */
         .esame-result { text-align: center; }
