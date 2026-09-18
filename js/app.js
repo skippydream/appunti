@@ -5244,6 +5244,8 @@ ightarrow$ mitocondrio</strong>. La fotorespirazione dissipa energia (consuma AT
             // Agronomia, quindi va nascosto negli altri corsi.
             const _esameBtn = document.getElementById('esameOpenBtn');
             if (_esameBtn) _esameBtn.style.display = (subject === 'agronomia') ? '' : 'none';
+            const _esameBioBtn = document.getElementById('esameBioOpenBtn');
+            if (_esameBioBtn) _esameBioBtn.style.display = (subject === 'biologia') ? '' : 'none';
             updateFilters();
             typesetSubject(subject);   // tipizza le formule del soggetto se non già fatto
             updateTrackerStats();
